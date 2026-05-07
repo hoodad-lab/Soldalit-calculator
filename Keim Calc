@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEIM Soldalit Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to handle active button states */
+        .btn-option {
+            transition: all 0.2s;
+        }
+        .btn-option.active {
+            background-color: #ecfdf5; /* emerald-50 */
+            border-color: #10b981; /* emerald-500 */
+            color: #047857; /* emerald-700 */
+            box-shadow: 0 0 0 1px #10b981;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 py-8 px-4 font-sans text-slate-800">
+
+<div class="max-w-5xl mx-auto space-y-8">
+    
+    <!-- Header -->
+    <div class="text-center space-y-2 mb-10">
+        <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">KEIM Soldalit Calculator</h1>
+        <p class="text-slate-600 text-lg">The 25-Year Warranty Mineral Coating System for Australia</p>
+    </div>
+
+    <!-- MAIN TWO-COLUMN LAYOUT -->
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- INPUT SECTION (Left Column, 7/12 width on large screens) -->
+        <div class="lg:col-span-7 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-7">
+            <div class="flex items-center space-x-2 border-b border-slate-100 pb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="10" y2="10"/><line x1="12" x2="12.01" y1="10" y2="10"/><line x1="8" x2="8.01" y1="10" y2="10"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="18" y2="18"/></svg>
+                <h2 class="text-2xl font-semibold text-slate-800">Project Details</h2>
+            </div>
+
+            <!-- Dimensions -->
+            <div class="space-y-4">
+                <label class="block text-sm font-medium text-slate-700">Surface Dimensions</label>
+                <div id="walls-container" class="space-y-3">
+                    <!-- Walls injected here by JS -->
+                </div>
+                <button type="button" id="add-wall-btn" class="flex items-center space-x-1 text-sm text-emerald-600 font-medium hover:text-emerald-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    <span>Add another wall</span>
+                </button>
+            </div>
+
+            <!-- Exclusions -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Subtract Windows/Doors Area (m²)</label>
+                <input type="number" id="exclusions" min="0" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Total area to exclude">
+            </div>
+
+            <!-- Pricing Tier -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Cost Estimator (Pricing Tier)</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" class="btn-option active px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="pricingTier" data-value="retail">Retail Pricing</button>
+                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="pricingTier" data-value="trade">Trade Pricing</button>
+                </div>
+            </div>
+
+            <!-- Substrate Type -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Substrate Type</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" class="btn-option active px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="substrateType" data-value="bare">Bare / Unpainted</button>
+                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="substrateType" data-value="painted">Previously Painted</button>
+                </div>
+            </div>
+
+            <!-- Substrate Texture -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Substrate Texture</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" class="btn-option active px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="texture" data-value="standard">Standard</button>
+                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="texture" data-value="textured">Textured</button>
+                </div>
+            </div>
+
+            <!-- Substrate Condition -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Substrate Condition (Primer Requirement)</label>
+                <div class="space-y-3">
+                    <button type="button" class="btn-option active w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="condition" data-value="normal">
+                        <span class="font-semibold block text-base">Normal Absorption</span>
+                        <span class="text-xs opacity-80 mt-1 block">Water runs in long, thin tracks.</span>
+                    </button>
+                    <button type="button" class="btn-option w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="condition" data-value="absorbent">
+                        <span class="font-semibold block text-base">Highly Absorbent</span>
+                        <span class="text-xs opacity-80 mt-1 block">Water soaks quickly (short, thick runners).</span>
+                    </button>
+                    <button type="button" class="btn-option w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="condition" data-value="dusting">
+                        <span class="font-semibold block text-base">Dusting or Limewashed</span>
+                        <span class="text-xs opacity-80 mt-1 block">Leaves a chalky residue on the hand.</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Crack Bridging & Base Coat -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Crack Bridging & Base Coat Selection</label>
+                <div class="space-y-3">
+                    <button type="button" class="btn-option active w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="baseCoat" data-value="soldalit">
+                        <span class="font-semibold block text-base">Standard Finish (No Cracks)</span>
+                        <span class="text-xs opacity-80 mt-1 block">KEIM Soldalit</span>
+                    </button>
+                    <button type="button" class="btn-option w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="baseCoat" data-value="grob">
+                        <span class="font-semibold block text-base">Hairline Cracks (up to 0.5mm)</span>
+                        <span class="text-xs opacity-80 mt-1 block">KEIM Soldalit-Grob (Slight texture)</span>
+                    </button>
+                    <button type="button" class="btn-option w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="baseCoat" data-value="contact-plus">
+                        <span class="font-semibold block text-base">Static Cracks (0.5mm - 1mm)</span>
+                        <span class="text-xs opacity-80 mt-1 block">KEIM Contact-Plus (Heavy texture)</span>
+                    </button>
+                    <button type="button" class="btn-option w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="baseCoat" data-value="contact-plus-grob">
+                        <span class="font-semibold block text-base">Severe Cracks / Maximum Texture</span>
+                        <span class="text-xs opacity-80 mt-1 block">KEIM Contact-Plus-Grob</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Labour Assumptions -->
+            <div class="pt-5 border-t border-slate-100">
+                <label class="block text-sm font-medium text-slate-700 mb-3">Labour Assumptions (For Comparison)</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1.5">Daily Rate ($)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-slate-400">$</span>
+                            <input type="number" id="labour-rate" min="0" value="400" class="w-full pl-7 pr-3 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1.5">Productivity / Coat</label>
+                        <div class="relative">
+                            <input type="number" id="productivity" min="1" value="150" class="w-full pr-8 pl-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
+                            <span class="absolute right-3 top-3 text-slate-400">m²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RESULTS SECTION (Right Column, 5/12 width) -->
+        <div class="lg:col-span-5 sticky top-8">
+            <!-- Empty State -->
+            <div id="results-empty" class="h-full min-h-[500px] bg-slate-100 rounded-2xl border-2 border-slate-200 border-dashed flex flex-col items-center justify-center p-8 text-center text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-5 text-slate-300"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="10" y2="10"/><line x1="12" x2="12.01" y1="10" y2="10"/><line x1="8" x2="8.01" y1="10" y2="10"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="18" y2="18"/></svg>
+                <p class="text-base">Enter your project details to calculate the required material ratios and amounts.</p>
+            </div>
+
+            <!-- Populated Results -->
+            <div id="results-populated" class="hidden bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-8 text-slate-100 flex flex-col space-y-6">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+
+    </div> <!-- END TWO COLUMN GRID -->
+
+    <!-- FULL WIDTH COMPARISON SECTION (Breaks out of the 2-column grid so it's not squished) -->
+    <div id="comparison-container" class="hidden pt-12 pb-8 border-t border-slate-200">
+        <!-- Content injected via JS -->
+    </div>
+
+</div>
+
+<script>
+    // State Management
+    let state = {
+        walls: [{ id: 1, width: '', height: '' }],
+        exclusions: '',
+        pricingTier: 'retail',
+        substrateType: 'bare',
+        texture: 'standard',
+        condition: 'normal',
+        baseCoat: 'soldalit',
+        labourRate: 400,
+        productivity: 150
+    };
+
+    // DOM Elements
+    const wallsContainer = document.getElementById('walls-container');
+    const addWallBtn = document.getElementById('add-wall-btn');
+    const exclusionsInput = document.getElementById('exclusions');
+    const optionButtons = document.querySelectorAll('.btn-option');
+    const labourRateInput = document.getElementById('labour-rate');
+    const productivityInput = document.getElementById('productivity');
+    const resultsEmpty = document.getElementById('results-empty');
+    const resultsPopulated = document.getElementById('results-populated');
+    const comparisonContainer = document.getElementById('comparison-container');
+
+    // SVG Icons
+    const trashIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
+    const alertIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`;
+    const infoIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>`;
+    const boxIcon = `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>`;
+
+    // Pricing Model (Estimated Averages per KG/L based on 2026 Price List)
+    const pricing = {
+        retail: {
+            'soldalit': 34.50,          
+            'grob': 36.50,              
+            'contact-plus': 37.00,      
+            'contact-plus-grob': 38.00, 
+            'fixativ': 29.50            
+        },
+        trade: {
+            'soldalit': 27.60,          
+            'grob': 29.20,              
+            'contact-plus': 29.60,      
+            'contact-plus-grob': 30.40, 
+            'fixativ': 23.60            
+        }
+    };
+
+    // Calculate Dynamic SVG elements via clean string concatenation to avoid syntax errors
+    const getKeimCrackSVG = (baseCoat) => {
+        if (baseCoat === 'soldalit') return '';
+        const c = '#22c55e'; // Green KEIM fill
+        let paths = '';
+        if (baseCoat === 'grob') { // Hairline
+            paths = '<path d="M 15,0 Q 20,20 18,50 T 20,100" stroke="' + c + '" stroke-width="1.5" fill="none" opacity="0.9"/><path d="M 50,0 Q 45,30 52,60 T 50,100" stroke="' + c + '" stroke-width="1" fill="none" opacity="0.9"/><path d="M 85,0 Q 88,40 82,70 T 85,100" stroke="' + c + '" stroke-width="2" fill="none" opacity="0.9"/><path d="M 120,0 Q 115,25 122,55 T 120,100" stroke="' + c + '" stroke-width="1.5" fill="none" opacity="0.9"/><path d="M 160,0 Q 165,35 158,65 T 160,100" stroke="' + c + '" stroke-width="1" fill="none" opacity="0.9"/><path d="M 190,0 Q 185,20 192,50 T 190,100" stroke="' + c + '" stroke-width="2" fill="none" opacity="0.9"/>';
+        } else if (baseCoat === 'contact-plus') { // Static Cracks
+            paths = '<path d="M 25,0 L 30,20 L 25,50 L 32,80 L 28,100" stroke="' + c + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 75,0 L 70,30 L 78,60 L 72,100" stroke="' + c + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 140,0 L 148,25 L 138,55 L 145,100" stroke="' + c + '" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 185,0 L 180,40 L 188,70 L 182,100" stroke="' + c + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>';
+        } else if (baseCoat === 'contact-plus-grob') { // Severe
+            paths = '<path d="M 35,0 L 42,30 L 36,60 L 45,100" stroke="' + c + '" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 100,0 L 90,40 L 105,70 L 95,100" stroke="' + c + '" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 165,0 L 175,25 L 160,65 L 170,100" stroke="' + c + '" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>';
+        }
+        return '<svg class="absolute top-0 left-0 w-full h-full z-0 pointer-events-none drop-shadow-sm" viewBox="0 0 200 100" preserveAspectRatio="none">' + paths + '</svg>';
+    };
+
+    const getAcrylicCrackSVG = (baseCoat) => {
+        if (baseCoat === 'soldalit') return '';
+        const c = '#1c1917'; // Dark void
+        let paths = '';
+        if (baseCoat === 'grob') {
+            paths = '<path d="M 15,0 Q 20,20 18,50 T 20,100" stroke="' + c + '" stroke-width="1.5" fill="none" opacity="0.8"/><path d="M 50,0 Q 45,30 52,60 T 50,100" stroke="' + c + '" stroke-width="1" fill="none" opacity="0.8"/><path d="M 85,0 Q 88,40 82,70 T 85,100" stroke="' + c + '" stroke-width="2" fill="none" opacity="0.8"/><path d="M 120,0 Q 115,25 122,55 T 120,100" stroke="' + c + '" stroke-width="1.5" fill="none" opacity="0.8"/><path d="M 160,0 Q 165,35 158,65 T 160,100" stroke="' + c + '" stroke-width="1" fill="none" opacity="0.8"/><path d="M 190,0 Q 185,20 192,50 T 190,100" stroke="' + c + '" stroke-width="2" fill="none" opacity="0.8"/>';
+        } else if (baseCoat === 'contact-plus') {
+            paths = '<path d="M 25,0 L 30,20 L 25,50 L 32,80 L 28,100" stroke="' + c + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/><path d="M 75,0 L 70,30 L 78,60 L 72,100" stroke="' + c + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/><path d="M 140,0 L 148,25 L 138,55 L 145,100" stroke="' + c + '" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/><path d="M 185,0 L 180,40 L 188,70 L 182,100" stroke="' + c + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>';
+        } else if (baseCoat === 'contact-plus-grob') {
+            paths = '<path d="M 35,0 L 42,30 L 36,60 L 45,100" stroke="' + c + '" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 100,0 L 90,40 L 105,70 L 95,100" stroke="' + c + '" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 165,0 L 175,25 L 160,65 L 170,100" stroke="' + c + '" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>';
+        }
+        return '<svg class="absolute top-0 left-0 w-full h-full z-0 pointer-events-none" viewBox="0 0 200 100" preserveAspectRatio="none">' + paths + '</svg>';
+    };
+
+    const getAcrylicTears = (baseCoat) => {
+        if (baseCoat === 'contact-plus') {
+            return '<div class="absolute bottom-[40%] left-[36%] w-[2px] h-4 bg-slate-950/80 rotate-[10deg] z-40"></div><div class="absolute bottom-[40%] left-[72.5%] w-[2px] h-3 bg-slate-950/80 -rotate-[5deg] z-40"></div>';
+        } else if (baseCoat === 'contact-plus-grob') {
+            return '<div class="absolute bottom-[40%] left-[22.5%] w-[3px] h-6 bg-slate-950/90 rotate-[15deg] z-40"></div><div class="absolute bottom-[40%] left-[47.5%] w-[3px] h-5 bg-slate-950/90 -rotate-[10deg] z-40"></div><div class="absolute bottom-[40%] left-[85%] w-[2px] h-6 bg-slate-950/90 rotate-[5deg] z-40"></div>';
+        }
+        return '';
+    };
+
+    // Beautiful dynamic bucket renderer UI
+    const renderBucketUI = (kg, productName) => {
+        if (kg <= 0) return '';
+        let b18 = Math.floor(kg / 18);
+        let rem = kg % 18;
+        let b5 = Math.floor(rem / 5);
+        rem = rem % 5;
+        let b2_5 = Math.ceil(rem / 2.5);
+
+        // Smart rounding - avoids recommending silly small combinations
+        if (b2_5 === 2) { b5 += 1; b2_5 = 0; }
+        if ((b5 * 5 + b2_5 * 2.5) > 15) { b18 += 1; b5 = 0; b2_5 = 0; }
+
+        const buckets = [];
+        if (b18 > 0) buckets.push({ qty: b18, size: '18 kg' });
+        if (b5 > 0) buckets.push({ qty: b5, size: '5 kg' });
+        if (b2_5 > 0) buckets.push({ qty: b2_5, size: '2.5 kg' });
+
+        if (buckets.length === 0) return '';
+
+        return `
+            <div class="mt-4 grid gap-3">
+                ${buckets.map(b => `
+                    <div class="flex items-center justify-between bg-[#133c2f]/60 border border-[#1b5543] p-3 sm:p-4 rounded-xl shadow-sm">
+                        <div class="flex items-center space-x-3 sm:space-x-4">
+                            <div class="bg-emerald-900 p-2.5 rounded-lg border border-emerald-700/50 text-emerald-400 shrink-0 shadow-inner">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10H2l1.6 11.2a2 2 0 0 0 2 1.8h12.8a2 2 0 0 0 2-1.8L22 10z"/><path d="M6 10V6a6 6 0 0 1 12 0v4"/></svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-bold text-base sm:text-lg">${b.size} Bucket</div>
+                                <div class="text-[9px] sm:text-[10px] text-[#4ade80]/80 uppercase tracking-widest font-bold">${productName}</div>
+                            </div>
+                        </div>
+                        <div class="text-xl sm:text-2xl font-black text-[#4ade80] flex items-center pr-2">
+                            <span class="text-emerald-600 font-medium text-lg mr-2">×</span> ${b.qty}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    };
+
+    // Render Walls Inputs
+    function renderWalls() {
+        wallsContainer.innerHTML = '';
+        state.walls.forEach(wall => {
+            const wallDiv = document.createElement('div');
+            wallDiv.className = 'flex space-x-3 items-end';
+            wallDiv.innerHTML = `
+                <div class="flex-1">
+                    <label class="block text-xs text-slate-500 mb-1">Width (m)</label>
+                    <input type="number" min="0" class="wall-input w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" data-id="${wall.id}" data-field="width" value="${wall.width}" placeholder="e.g. 5.5">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-xs text-slate-500 mb-1">Height (m)</label>
+                    <input type="number" min="0" class="wall-input w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" data-id="${wall.id}" data-field="height" value="${wall.height}" placeholder="e.g. 2.4">
+                </div>
+                <button type="button" class="remove-wall-btn p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors mb-0.5" data-id="${wall.id}" ${state.walls.length === 1 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                    ${trashIcon}
+                </button>
+            `;
+            wallsContainer.appendChild(wallDiv);
+        });
+
+        document.querySelectorAll('.wall-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                const field = e.target.getAttribute('data-field');
+                const wall = state.walls.find(w => w.id === id);
+                if (wall) {
+                    wall[field] = e.target.value;
+                    calculate();
+                }
+            });
+        });
+
+        document.querySelectorAll('.remove-wall-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (state.walls.length > 1) {
+                    const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                    state.walls = state.walls.filter(w => w.id !== id);
+                    renderWalls();
+                    calculate();
+                }
+            });
+        });
+    }
+
+    addWallBtn.addEventListener('click', () => {
+        state.walls.push({ id: Date.now(), width: '', height: '' });
+        renderWalls();
+        calculate();
+    });
+
+    exclusionsInput.addEventListener('input', (e) => {
+        state.exclusions = e.target.value;
+        calculate();
+    });
+    
+    labourRateInput.addEventListener('input', (e) => {
+        state.labourRate = parseFloat(e.target.value) || 0;
+        calculate();
+    });
+    
+    productivityInput.addEventListener('input', (e) => {
+        state.productivity = parseFloat(e.target.value) || 1;
+        calculate();
+    });
+
+    optionButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const group = e.currentTarget.getAttribute('data-group');
+            const value = e.currentTarget.getAttribute('data-value');
+            state[group] = value;
+            document.querySelectorAll(`.btn-option[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            calculate();
+        });
+    });
+
+    function calculate() {
+        let totalGrossArea = state.walls.reduce((sum, wall) => {
+            const w = parseFloat(wall.width) || 0;
+            const h = parseFloat(wall.height) || 0;
+            return sum + (w * h);
+        }, 0);
+
+        const exclusionsArea = parseFloat(state.exclusions) || 0;
+        let netArea = totalGrossArea - exclusionsArea;
+        if (netArea < 0) netArea = 0;
+
+        if (netArea === 0) {
+            resultsEmpty.classList.remove('hidden');
+            resultsPopulated.classList.add('hidden');
+            comparisonContainer.classList.add('hidden');
+            return;
+        }
+
+        resultsEmpty.classList.add('hidden');
+        resultsPopulated.classList.remove('hidden');
+        comparisonContainer.classList.remove('hidden');
+
+        const coverages = {
+            'soldalit': 6,
+            'grob': 5,
+            'contact-plus': 2.5,
+            'contact-plus-grob': 2.0
+        };
+
+        const productNames = {
+            'soldalit': 'KEIM Soldalit',
+            'grob': 'KEIM Soldalit-Grob',
+            'contact-plus': 'KEIM Contact-Plus',
+            'contact-plus-grob': 'KEIM Contact-Plus-Grob'
+        };
+
+        const coat1Rate = coverages[state.baseCoat];
+        const coat2Rate = 6;
+        const paintDensity = 1.4;
+        const fixativDensity = 1.0;
+
+        const coat1Paint = netArea / coat1Rate;
+        const coat1L = coat1Paint / paintDensity;
+        const coat2Paint = netArea / coat2Rate;
+        const coat2L = coat2Paint / paintDensity;
+        const isSameProduct = state.baseCoat === 'soldalit';
+
+        let primerFixativ = 0;
+        let primerDescription = '';
+        
+        if (state.condition === 'absorbent') {
+            primerFixativ = netArea / 5;
+            primerDescription = 'Apply undiluted to consolidate and satisfy high absorption.';
+        } else if (state.condition === 'dusting') {
+            primerFixativ = (netArea / 5) / 2;
+            primerDescription = 'Dilute Fixativ with clean cold water at a 1:1 ratio (equal parts) and apply as a primer.';
+        }
+
+        let coat1Diluent = 0;
+        let coat2Diluent = 0;
+        let coat1DiluentText = 'Apply undiluted.';
+        let coat2DiluentText = 'Apply undiluted.';
+        
+        if (state.texture === 'textured') {
+            coat1Diluent = coat1Paint * 0.20;
+            coat2Diluent = coat2Paint * 0.05;
+            coat1DiluentText = `Dilute with Fixativ at a ratio of 1:5 (Add approx 200ml Fixativ per 1kg of paint). Required: ${coat1Diluent.toLocaleString('en-US', {maximumFractionDigits: 1})} kg.`;
+            coat2DiluentText = `Dilute with Fixativ at a ratio of 1:20 (Add approx 50ml Fixativ per 1kg of paint). Required: ${coat2Diluent.toLocaleString('en-US', {maximumFractionDigits: 1})} kg.`;
+        }
+
+        const totalFixativ = primerFixativ + coat1Diluent + coat2Diluent;
+        const totalFixativL = totalFixativ / fixativDensity;
+        const totalPaintL = coat1L + coat2L;
+
+        // KEIM Costs
+        const costCoat1 = coat1Paint * pricing[state.pricingTier][state.baseCoat];
+        const costCoat2 = coat2Paint * pricing[state.pricingTier]['soldalit'];
+        const costFixativ = totalFixativL * pricing[state.pricingTier]['fixativ'];
+        const totalEstimatedCost = costCoat1 + costCoat2 + costFixativ;
+
+        const keimCoatsTotal = primerFixativ > 0 ? 3 : 2;
+        const keimLabourDays = (netArea * keimCoatsTotal) / state.productivity;
+        const keimLabourCost = keimLabourDays * state.labourRate;
+        const keimTotalProjectCost = totalEstimatedCost + keimLabourCost;
+        
+        // Acrylic Costs
+        const acrylicLiters = (netArea / 10) + ((netArea / 4) * 2);
+        const acrylicPricePerLitre = state.pricingTier === 'retail' ? 18 : 15;
+        const acrylicMaterialCost = acrylicLiters * acrylicPricePerLitre;
+        const acrylicCoatsTotal = 3; 
+        const acrylicLabourDays = (netArea * acrylicCoatsTotal) / state.productivity;
+        const acrylicLabourCost = acrylicLabourDays * state.labourRate;
+        const acrylicTotalProjectCost = acrylicMaterialCost + acrylicLabourCost;
+
+        let substrateWarning = state.substrateType === 'painted' 
+            ? 'Previously Painted Substrate: Ensure existing coating is sound, clean, and perform a cross-cut adhesion test. Remove any flaking material.' 
+            : 'Bare Substrate: Ensure new cement render has cured for at least 15 days (28 days for lime render) before application.';
+
+        renderResultsHTML({
+            netArea,
+            pricingTierLabel: state.pricingTier === 'retail' ? 'Retail' : 'Trade',
+            labourRate: state.labourRate,
+            productivity: state.productivity,
+            totalEstimatedCost,
+            coat1Name: productNames[state.baseCoat],
+            coat1Paint, coat1L,
+            coat2Paint, coat2L,
+            isSameProduct,
+            primerFixativ, primerFixativL: primerFixativ / fixativDensity,
+            totalFixativ, totalFixativL,
+            totalPaintL,
+            substrateWarning, primerDescription, coat1DiluentText, coat2DiluentText,
+            keimLabourDays, keimLabourCost, keimTotalProjectCost,
+            acrylicLiters, acrylicLabourDays, acrylicLabourCost, acrylicMaterialCost, acrylicTotalProjectCost, acrylicPricePerLitre,
+            baseCoat: state.baseCoat
+        });
+    }
+
+    function renderResultsHTML(data) {
+        // Formatting Helpers
+        const fmt = (num) => num.toLocaleString('en-US', { maximumFractionDigits: 1 });
+        const fmtC = (num) => Math.round(num).toLocaleString('en-US');
+
+        const keimCrackSVG = getKeimCrackSVG(data.baseCoat);
+        const acrylicCrackSVG = getAcrylicCrackSVG(data.baseCoat);
+
+        // ----------------------------------------------------
+        // 1. POPULATE THE RIGHT-COLUMN SUMMARY BOX
+        // ----------------------------------------------------
+        let htmlSummary = `
+            <div class="border-b border-slate-700 pb-4 flex justify-between items-end">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-white mb-1">System Requirements</h2>
+                    <p class="text-slate-400 text-sm">Net Application Area: <span class="text-emerald-400 font-bold text-lg">${fmt(data.netArea)} m²</span></p>
+                </div>
+            </div>
+            
+            <div class="flex-1 space-y-6">
+                <!-- Substrate Warning -->
+                <div class="bg-amber-900/30 border border-amber-700/50 rounded-lg p-3 sm:p-4 flex items-start space-x-3">
+                    <div class="text-amber-500 shrink-0 mt-0.5">${alertIcon}</div>
+                    <p class="text-sm text-amber-200 leading-relaxed">${data.substrateWarning}</p>
+                </div>
+        `;
+
+        let stepCounter = 1;
+
+        if (data.primerFixativ > 0) {
+            htmlSummary += `
+                <div class="space-y-2">
+                    <h3 class="text-emerald-400 font-medium text-sm uppercase tracking-wider">Step ${stepCounter++}: Surface Preparation</h3>
+                    <div class="bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-700 shadow-sm">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="font-medium text-white text-base">KEIM Soldalit-Fixativ</span>
+                            <span class="font-bold text-xl text-emerald-300">
+                                ${fmt(data.primerFixativ)} kg 
+                                <span class="text-sm font-normal text-slate-400 ml-1">(≈ ${fmt(data.primerFixativL)} L)</span>
+                            </span>
+                        </div>
+                        <p class="text-sm text-slate-400 leading-relaxed">${data.primerDescription}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        htmlSummary += `
+            <div class="space-y-2">
+                <h3 class="text-emerald-400 font-medium text-sm uppercase tracking-wider">Step ${stepCounter++}: Coat 1 (Base Coat)</h3>
+                <div class="bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="font-medium text-white text-base">${data.coat1Name}</span>
+                        <span class="font-bold text-xl text-emerald-300">
+                            ${fmt(data.coat1Paint)} kg 
+                            <span class="text-sm font-normal text-slate-400 ml-1">(≈ ${fmt(data.coat1L)} L)</span>
+                        </span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 leading-relaxed mt-3 p-3 bg-slate-900 rounded-lg border border-slate-700/80">
+                        <span class="font-semibold text-slate-300 block mb-1">Mixing Instructions:</span>
+                        ${data.coat1DiluentText}
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="text-emerald-400 font-medium text-sm uppercase tracking-wider">Step ${stepCounter++}: Coat 2 (Top Coat)</h3>
+                <div class="bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-700 shadow-sm">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="font-medium text-white text-base">KEIM Soldalit (Top Coat)</span>
+                        <span class="font-bold text-xl text-emerald-300">
+                            ${fmt(data.coat2Paint)} kg 
+                            <span class="text-sm font-normal text-slate-400 ml-1">(≈ ${fmt(data.coat2L)} L)</span>
+                        </span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 leading-relaxed mt-3 p-3 bg-slate-900 rounded-lg border border-slate-700/80">
+                        <span class="font-semibold text-slate-300 block mb-1">Mixing Instructions:</span>
+                        ${data.coat2DiluentText}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-emerald-900/40 border border-emerald-800/50 rounded-xl p-5 sm:p-6 mt-6">
+            <h3 class="text-emerald-300 font-semibold mb-5 text-lg">Total Order Summary</h3>
+            <div class="space-y-6">
+        `;
+
+        if (data.isSameProduct) {
+            htmlSummary += `
+                <div class="border-b border-emerald-800/50 pb-5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-200 font-semibold text-base sm:text-lg">Total KEIM Soldalit</span>
+                        <div class="text-right">
+                            <span class="text-white font-bold text-xl">${fmt(data.coat1Paint + data.coat2Paint)} kg</span>
+                            <span class="text-sm font-normal text-slate-400 block sm:inline sm:ml-1">(${fmt(data.totalPaintL)} Litres)</span>
+                        </div>
+                    </div>
+                    ${renderBucketUI(data.coat1Paint + data.coat2Paint, 'KEIM Soldalit')}
+                </div>
+            `;
+        } else {
+            htmlSummary += `
+                <div class="border-b border-emerald-800/50 pb-5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-200 font-semibold text-base sm:text-lg">Total ${data.coat1Name}</span>
+                        <div class="text-right">
+                            <span class="text-white font-bold text-xl">${fmt(data.coat1Paint)} kg</span>
+                            <span class="text-sm font-normal text-slate-400 block sm:inline sm:ml-1">(${fmt(data.coat1L)} L)</span>
+                        </div>
+                    </div>
+                    ${renderBucketUI(data.coat1Paint, data.coat1Name)}
+                </div>
+                <div class="border-b border-emerald-800/50 pb-5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-200 font-semibold text-base sm:text-lg">Total KEIM Soldalit</span>
+                        <div class="text-right">
+                            <span class="text-white font-bold text-xl">${fmt(data.coat2Paint)} kg</span>
+                            <span class="text-sm font-normal text-slate-400 block sm:inline sm:ml-1">(${fmt(data.coat2L)} L)</span>
+                        </div>
+                    </div>
+                    ${renderBucketUI(data.coat2Paint, 'KEIM Soldalit (Top Coat)')}
+                </div>
+            `;
+        }
+
+        if (data.totalFixativ > 0) {
+            htmlSummary += `
+                <div class="border-b border-emerald-800/50 pb-5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-200 font-semibold text-base sm:text-lg">Total KEIM Fixativ</span>
+                        <div class="text-right">
+                            <span class="text-white font-bold text-xl">${fmt(data.totalFixativ)} kg</span>
+                            <span class="text-sm font-normal text-slate-400 block sm:inline sm:ml-1">(${fmt(data.totalFixativL)} L)</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        htmlSummary += `
+            </div>
+            
+            <div class="mt-6 pt-5 border-t border-emerald-500/50">
+                <h4 class="text-emerald-300 font-semibold mb-4 text-lg">Project Cost Breakdown (Ex. GST)</h4>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-emerald-400/90 text-sm sm:text-base">Material Cost (${data.pricingTierLabel})</span>
+                        <span class="text-emerald-300 font-medium text-base">$${fmtC(data.totalEstimatedCost)}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-emerald-400/90 text-sm sm:text-base">Labour Cost (${fmt(data.keimLabourDays)} Days @ $${fmtC(data.labourRate)}/day)</span>
+                        <span class="text-emerald-300 font-medium text-base">$${fmtC(data.keimLabourCost)}</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-4 mt-4 border-t border-emerald-800/50">
+                        <span class="text-emerald-300 font-medium text-lg sm:text-xl">Total Estimated Project</span>
+                        <span class="text-emerald-300 font-bold text-2xl sm:text-3xl">$${fmtC(data.keimTotalProjectCost)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 flex items-start space-x-2 text-[11px] sm:text-xs text-emerald-400/80 leading-relaxed">
+                <div class="shrink-0 mt-0.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                </div>
+                <p><strong>Note:</strong> Cost is an estimate based on average light/white tint base prices. Final costs will vary based on specific colour groups (PG1, PG2, PG3, etc.). Dark or intense colours may also require an additional (third) coat depending on the soundness and uniformity of the substrate.</p>
+            </div>
+        </div>
+        `;
+
+        resultsPopulated.innerHTML = htmlSummary;
+
+
+        // ----------------------------------------------------
+        // 2. POPULATE THE FULL-WIDTH COMPARISON SECTION
+        // ----------------------------------------------------
+        let htmlComparison = `
+            <div class="text-center mb-10">
+                <h3 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">System & Value Comparison</h3>
+                <p class="text-slate-500 mt-2 max-w-2xl mx-auto text-sm sm:text-base">See how the KEIM 25-Year System stacks up against standard elastomeric membranes in both performance and true lifetime value.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
+                
+                <!-- KEIM Box -->
+                <div class="bg-gradient-to-b from-[#0f2e22] to-[#0f172a] border border-[#1b4332] rounded-2xl p-5 lg:p-7 shadow-2xl relative overflow-hidden flex flex-col">
+                    <div class="absolute top-2 right-2 lg:right-4 lg:top-4 opacity-[0.03] text-emerald-400 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+                    </div>
+                    
+                    <!-- Header -->
+                    <div class="flex items-center space-x-4 lg:space-x-5 relative z-10 border-b border-[#1b4332] h-[100px] pb-4 mb-4">
+                        <div class="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-[#133c2f] border-2 border-[#1b5543] flex items-center justify-center text-[#4ade80] shrink-0 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-[#4ade80] text-xl lg:text-2xl font-bold leading-tight">KEIM Mineral System</h4>
+                            <p class="text-[#22c55e] text-[10px] lg:text-xs uppercase tracking-widest font-bold mt-1.5">25-Year Warranty</p>
+                        </div>
+                    </div>
+
+                    <!-- Visual Layer Architecture - KEIM -->
+                    <div class="h-[150px] mb-5 rounded-xl border border-[#1b5543]/60 bg-[#133c2f]/40 p-4 flex flex-col justify-center relative overflow-hidden">
+                        <h5 class="text-emerald-500/80 text-[10px] uppercase tracking-widest font-bold mb-2.5 z-10 relative">Coating Architecture</h5>
+                        <div class="flex-1 flex flex-col w-full z-10 shadow-lg border border-emerald-950 rounded-b relative">
+                            <div class="flex-1 bg-[#4ade80] rounded-t flex items-center justify-center text-[10px] sm:text-xs font-bold text-[#0f2e22] shadow-[inset_0_-2px_6px_rgba(0,0,0,0.1)] z-30 relative">
+                                KEIM Soldalit (Top Coat)
+                            </div>
+                            <div class="flex-1 bg-[#22c55e] flex items-center justify-center text-[10px] sm:text-xs font-bold text-[#0f2e22] shadow-[inset_0_-2px_6px_rgba(0,0,0,0.1)] z-20 relative">
+                                ${data.coat1Name} (Base)
+                            </div>
+                            ${data.primerFixativ > 0 ? `<div class="h-6 bg-[#16a34a] flex items-center justify-center text-[9px] font-bold text-white z-10 relative border-b border-[#15803d]">Soldalit-Fixativ (Primer)</div>` : ''}
+                            
+                            <!-- Penetration Gradient -->
+                            <div class="flex-[1.8] bg-gradient-to-b from-[#15803d] to-stone-500 rounded-b flex items-center justify-center text-[10px] sm:text-xs font-bold text-white border-t border-emerald-400/40 border-dashed relative overflow-hidden">
+                                ${keimCrackSVG}
+                                <span class="z-10 drop-shadow-md">Substrate (Silicification Bond)</span>
+                            </div>
+                        </div>
+                        <!-- Background Down Arrows showing chemical fusion -->
+                        <div class="absolute inset-0 flex items-end justify-center pb-[10px] opacity-20 pointer-events-none">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- Horizontal List Stats (Rigid Heights) -->
+                    <div class="flex flex-col relative z-10">
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Total Coats</span>
+                            <span class="text-sm lg:text-base font-bold text-white text-right">${data.primerFixativ > 0 ? '3 Coats' : '2 Coats'}</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Total Volume</span>
+                            <span class="text-sm lg:text-base font-bold text-[#4ade80] text-right">${fmt(data.totalPaintL + data.totalFixativL)} Litres</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Labour Time</span>
+                            <span class="text-sm lg:text-base font-bold text-[#4ade80] text-right">${fmt(data.keimLabourDays)} Days</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Crack Treatment</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-[#4ade80] block">Permanent Mineral Fill</span>
+                                <span class="text-[10px] lg:text-[11px] text-emerald-600 block mt-0.5">(Fuses & binds structurally)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Warranty</span>
+                            <span class="text-sm lg:text-base font-bold text-[#4ade80] text-right">25 Years</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Lifespan</span>
+                            <span class="text-sm lg:text-base font-bold text-[#4ade80] text-right">25+ Years</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">100-Yr Cycle</span>
+                            <span class="text-sm lg:text-base font-bold text-[#4ade80] text-right">1 to 2 Repaints</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Bond Type</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-white block">Chemical</span>
+                                <span class="text-[10px] lg:text-[11px] text-slate-400 block mt-0.5">(Silicification)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Breathability</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-white block">Extremely High</span>
+                                <span class="text-[10px] lg:text-[11px] text-slate-400 block mt-0.5">(&gt;99% open)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">UV Stability</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-white block">Absolute</span>
+                                <span class="text-[10px] lg:text-[11px] text-slate-400 block mt-0.5">(No fading)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px]">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Composition</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-[#4ade80] block">Liquid Stone</span>
+                                <span class="text-[10px] lg:text-[11px] text-emerald-600 block mt-0.5">(0 landfill impact)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acrylic Box -->
+                <div class="bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl p-5 lg:p-7 shadow-2xl flex flex-col relative overflow-hidden">
+                    <!-- Header -->
+                    <div class="flex items-center space-x-4 lg:space-x-5 relative z-10 border-b border-slate-700/80 h-[100px] pb-4 mb-4">
+                        <div class="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center text-slate-400 shrink-0 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-xl lg:text-2xl font-bold leading-tight">Elastomeric Membrane</h4>
+                            <p class="text-slate-400 text-[10px] lg:text-xs uppercase tracking-widest font-bold mt-1.5">Premium Acrylic System</p>
+                        </div>
+                    </div>
+
+                    <!-- Visual Layer Architecture - Acrylic -->
+                    <div class="h-[150px] mb-5 rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 flex flex-col justify-center relative overflow-hidden">
+                        <h5 class="text-slate-500 text-[10px] uppercase tracking-widest font-bold mb-2.5 z-10 relative">Coating Architecture</h5>
+                        <div class="flex-1 flex flex-col w-full z-10 shadow-lg border border-slate-900 rounded-b bg-slate-950 relative">
+                            <div class="flex-1 bg-sky-400 rounded-t flex items-center justify-center text-[10px] sm:text-xs font-bold text-sky-950 border-b border-sky-500/50 shadow-[inset_0_-2px_6px_rgba(0,0,0,0.1)]">
+                                Acrylic Topcoat 2
+                            </div>
+                            <div class="flex-1 bg-sky-500 flex items-center justify-center text-[10px] sm:text-xs font-bold text-white border-b border-sky-600/50 shadow-[inset_0_-2px_6px_rgba(0,0,0,0.1)]">
+                                Acrylic Topcoat 1
+                            </div>
+                            <div class="h-6 bg-sky-600 rounded-b flex items-center justify-center text-[9px] font-bold text-sky-100 shadow-[0_4px_6px_rgba(0,0,0,0.5)]">
+                                Acrylic Primer
+                            </div>
+                            
+                            <!-- Sharp distinct gap representing weak surface adhesion -->
+                            <div class="h-2 w-full bg-transparent flex items-center justify-center relative overflow-hidden">
+                                <div class="absolute inset-0 bg-slate-950/80"></div>
+                            </div>
+
+                            <div class="flex-[1.8] bg-stone-500 rounded flex items-center justify-center text-[10px] sm:text-xs font-bold text-stone-200 border-t border-slate-600 relative overflow-hidden">
+                                ${acrylicCrackSVG}
+                                <span class="z-10 drop-shadow-md">Substrate (Surface Adhesion)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Horizontal List Stats (Rigid Heights) -->
+                    <div class="flex flex-col relative z-10">
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Total Coats</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-slate-200 block">3 Coats</span>
+                                <span class="text-[10px] lg:text-[11px] text-slate-500 block mt-0.5">(Primer + 2 Topcoats)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Total Volume</span>
+                            <span class="text-sm lg:text-base font-bold text-slate-200 text-right">${fmt(data.acrylicLiters)} Litres</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Labour Time</span>
+                            <span class="text-sm lg:text-base font-bold text-slate-200 text-right">${fmt(data.acrylicLabourDays)} Days</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Crack Treatment</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-amber-500 block">Temp. Elastic Bridging</span>
+                                <span class="text-[10px] lg:text-[11px] text-amber-600/70 block mt-0.5">(Hides cracks until brittle)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Warranty</span>
+                            <span class="text-sm lg:text-base font-bold text-slate-200 text-right">7 to 15 Years</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Lifespan</span>
+                            <span class="text-sm lg:text-base font-bold text-slate-200 text-right">10-15 Years</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">100-Yr Cycle</span>
+                            <span class="text-sm lg:text-base font-bold text-amber-500 text-right">6 to 10 Repaints</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Bond Type</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-slate-200 block">Mechanical</span>
+                                <span class="text-[10px] lg:text-[11px] text-slate-500 block mt-0.5">(Heavy Film)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Breathability</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-slate-200 block">Low</span>
+                                <span class="text-[10px] lg:text-[11px] text-slate-500 block mt-0.5">(Traps moisture)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">UV Stability</span>
+                            <span class="text-sm lg:text-base font-bold text-slate-200 text-right">Prone to fading</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px]">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Composition</span>
+                            <div class="text-right">
+                                <span class="text-sm lg:text-base font-bold text-amber-500 block">Liquid Plastic</span>
+                                <span class="text-[10px] lg:text-[11px] text-amber-600/70 block mt-0.5">(Microplastics & VOCs)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-start space-x-3 text-xs sm:text-sm text-slate-500 bg-white p-5 rounded-xl border border-slate-200 mt-8 shadow-sm max-w-4xl mx-auto leading-relaxed">
+                <div class="text-emerald-500 shrink-0 mt-0.5">${infoIcon}</div>
+                <p>* KEIM Litre conversion is based on a specific density of 1.4 kg/L. Elastomeric comparison uses standard industry high-build spread rates (Primer @ 10m²/L, 2x Topcoats @ 4m²/L). Time estimation assumes a productivity rate of ${data.productivity}m² per day per coat, reflecting purely application time (excludes prep, dry times, and scaffold adjustments).</p>
+            </div>
+        `;
+
+        comparisonContainer.innerHTML = htmlComparison;
+    }
+
+    // Initial render
+    renderWalls();
+</script>
+</body>
+</html>
