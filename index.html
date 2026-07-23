@@ -56,15 +56,6 @@
                 <input type="number" id="exclusions" min="0" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Total area to exclude">
             </div>
 
-            <!-- Pricing Tier -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Cost Estimator (Pricing Tier)</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <button type="button" class="btn-option active px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="pricingTier" data-value="retail">Retail Pricing</button>
-                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="pricingTier" data-value="trade">Trade Pricing</button>
-                </div>
-            </div>
-
             <!-- Substrate Type -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">Substrate Type</label>
@@ -102,9 +93,9 @@
                 </div>
             </div>
 
-            <!-- Crack Bridging & Base Coat -->
+            <!-- Crack Filling & Base Coat -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Crack Bridging & Base Coat Selection</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Crack Filling & Base Coat Selection</label>
                 <div class="space-y-3">
                     <button type="button" class="btn-option active w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="baseCoat" data-value="soldalit">
                         <span class="font-semibold block text-base">Standard Finish (No Cracks)</span>
@@ -176,7 +167,6 @@
     let state = {
         walls: [{ id: 1, width: '', height: '' }],
         exclusions: '',
-        pricingTier: 'retail',
         substrateType: 'bare',
         texture: 'standard',
         condition: 'normal',
@@ -201,24 +191,6 @@
     const alertIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`;
     const infoIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>`;
     const boxIcon = `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>`;
-
-    // Pricing Model (Estimated Averages per KG/L based on 2026 Price List)
-    const pricing = {
-        retail: {
-            'soldalit': 34.50,          
-            'grob': 36.50,              
-            'contact-plus': 37.00,      
-            'contact-plus-grob': 38.00, 
-            'fixativ': 29.50            
-        },
-        trade: {
-            'soldalit': 27.60,          
-            'grob': 29.20,              
-            'contact-plus': 29.60,      
-            'contact-plus-grob': 30.40, 
-            'fixativ': 23.60            
-        }
-    };
 
     // Calculate Dynamic SVG elements via clean string concatenation to avoid syntax errors
     const getKeimCrackSVG = (baseCoat) => {
@@ -247,15 +219,6 @@
             paths = '<path d="M 35,0 L 42,30 L 36,60 L 45,100" stroke="' + c + '" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 100,0 L 90,40 L 105,70 L 95,100" stroke="' + c + '" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 165,0 L 175,25 L 160,65 L 170,100" stroke="' + c + '" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>';
         }
         return '<svg class="absolute top-0 left-0 w-full h-full z-0 pointer-events-none" viewBox="0 0 200 100" preserveAspectRatio="none">' + paths + '</svg>';
-    };
-
-    const getAcrylicTears = (baseCoat) => {
-        if (baseCoat === 'contact-plus') {
-            return '<div class="absolute bottom-[40%] left-[36%] w-[2px] h-4 bg-slate-950/80 rotate-[10deg] z-40"></div><div class="absolute bottom-[40%] left-[72.5%] w-[2px] h-3 bg-slate-950/80 -rotate-[5deg] z-40"></div>';
-        } else if (baseCoat === 'contact-plus-grob') {
-            return '<div class="absolute bottom-[40%] left-[22.5%] w-[3px] h-6 bg-slate-950/90 rotate-[15deg] z-40"></div><div class="absolute bottom-[40%] left-[47.5%] w-[3px] h-5 bg-slate-950/90 -rotate-[10deg] z-40"></div><div class="absolute bottom-[40%] left-[85%] w-[2px] h-6 bg-slate-950/90 rotate-[5deg] z-40"></div>';
-        }
-        return '';
     };
 
     // Beautiful dynamic bucket renderer UI
@@ -452,25 +415,16 @@
         const totalFixativL = totalFixativ / fixativDensity;
         const totalPaintL = coat1L + coat2L;
 
-        // KEIM Costs
-        const costCoat1 = coat1Paint * pricing[state.pricingTier][state.baseCoat];
-        const costCoat2 = coat2Paint * pricing[state.pricingTier]['soldalit'];
-        const costFixativ = totalFixativL * pricing[state.pricingTier]['fixativ'];
-        const totalEstimatedCost = costCoat1 + costCoat2 + costFixativ;
-
+        // KEIM Labour Costs
         const keimCoatsTotal = primerFixativ > 0 ? 3 : 2;
         const keimLabourDays = (netArea * keimCoatsTotal) / state.productivity;
         const keimLabourCost = keimLabourDays * state.labourRate;
-        const keimTotalProjectCost = totalEstimatedCost + keimLabourCost;
         
-        // Acrylic Costs
+        // Acrylic Labour Costs
         const acrylicLiters = (netArea / 10) + ((netArea / 4) * 2);
-        const acrylicPricePerLitre = state.pricingTier === 'retail' ? 18 : 15;
-        const acrylicMaterialCost = acrylicLiters * acrylicPricePerLitre;
         const acrylicCoatsTotal = 3; 
         const acrylicLabourDays = (netArea * acrylicCoatsTotal) / state.productivity;
         const acrylicLabourCost = acrylicLabourDays * state.labourRate;
-        const acrylicTotalProjectCost = acrylicMaterialCost + acrylicLabourCost;
 
         let substrateWarning = state.substrateType === 'painted' 
             ? 'Previously Painted Substrate: Ensure existing coating is sound, clean, and perform a cross-cut adhesion test. Remove any flaking material.' 
@@ -478,10 +432,8 @@
 
         renderResultsHTML({
             netArea,
-            pricingTierLabel: state.pricingTier === 'retail' ? 'Retail' : 'Trade',
             labourRate: state.labourRate,
             productivity: state.productivity,
-            totalEstimatedCost,
             coat1Name: productNames[state.baseCoat],
             coat1Paint, coat1L,
             coat2Paint, coat2L,
@@ -490,8 +442,8 @@
             totalFixativ, totalFixativL,
             totalPaintL,
             substrateWarning, primerDescription, coat1DiluentText, coat2DiluentText,
-            keimLabourDays, keimLabourCost, keimTotalProjectCost,
-            acrylicLiters, acrylicLabourDays, acrylicLabourCost, acrylicMaterialCost, acrylicTotalProjectCost, acrylicPricePerLitre,
+            keimLabourDays, keimLabourCost,
+            acrylicLiters, acrylicLabourDays, acrylicLabourCost,
             baseCoat: state.baseCoat
         });
     }
@@ -640,19 +592,15 @@
             </div>
             
             <div class="mt-6 pt-5 border-t border-emerald-500/50">
-                <h4 class="text-emerald-300 font-semibold mb-4 text-lg">Project Cost Breakdown (Ex. GST)</h4>
+                <h4 class="text-emerald-300 font-semibold mb-3 text-lg">Labour Estimate</h4>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-emerald-400/90 text-sm sm:text-base">Material Cost (${data.pricingTierLabel})</span>
-                        <span class="text-emerald-300 font-medium text-base">$${fmtC(data.totalEstimatedCost)}</span>
+                        <span class="text-emerald-400/90 text-sm sm:text-base">Application Time</span>
+                        <span class="text-emerald-300 font-medium text-base">${fmt(data.keimLabourDays)} Days</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-emerald-400/90 text-sm sm:text-base">Labour Cost (${fmt(data.keimLabourDays)} Days @ $${fmtC(data.labourRate)}/day)</span>
-                        <span class="text-emerald-300 font-medium text-base">$${fmtC(data.keimLabourCost)}</span>
-                    </div>
-                    <div class="flex justify-between items-center pt-4 mt-4 border-t border-emerald-800/50">
-                        <span class="text-emerald-300 font-medium text-lg sm:text-xl">Total Estimated Project</span>
-                        <span class="text-emerald-300 font-bold text-2xl sm:text-3xl">$${fmtC(data.keimTotalProjectCost)}</span>
+                        <span class="text-emerald-400/90 text-sm sm:text-base">Estimated Labour Cost</span>
+                        <span class="text-emerald-300 font-bold text-xl sm:text-2xl">$${fmtC(data.keimLabourCost)}</span>
                     </div>
                 </div>
             </div>
@@ -660,7 +608,7 @@
                 <div class="shrink-0 mt-0.5">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
                 </div>
-                <p><strong>Note:</strong> Cost is an estimate based on average light/white tint base prices. Final costs will vary based on specific colour groups (PG1, PG2, PG3, etc.). Dark or intense colours may also require an additional (third) coat depending on the soundness and uniformity of the substrate.</p>
+                <p><strong>Note:</strong> Dark or intense colours may require an additional (third) coat depending on the soundness and uniformity of the substrate.</p>
             </div>
         </div>
         `;
@@ -733,6 +681,10 @@
                         <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
                             <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Labour Time</span>
                             <span class="text-sm lg:text-base font-bold text-[#4ade80] text-right">${fmt(data.keimLabourDays)} Days</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
+                            <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Labour Cost</span>
+                            <span class="text-sm lg:text-base font-bold text-white text-right">$${fmtC(data.keimLabourCost)}</span>
                         </div>
                         <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
                             <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Crack Treatment</span>
@@ -841,10 +793,14 @@
                             <span class="text-sm lg:text-base font-bold text-slate-200 text-right">${fmt(data.acrylicLabourDays)} Days</span>
                         </div>
                         <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
+                            <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Labour Cost</span>
+                            <span class="text-sm lg:text-base font-bold text-slate-200 text-right">$${fmtC(data.acrylicLabourCost)}</span>
+                        </div>
+                        <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
                             <span class="text-[10px] lg:text-xs text-slate-500 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Crack Treatment</span>
                             <div class="text-right">
-                                <span class="text-sm lg:text-base font-bold text-amber-500 block">Temp. Elastic Bridging</span>
-                                <span class="text-[10px] lg:text-[11px] text-amber-600/70 block mt-0.5">(Hides cracks until brittle)</span>
+                                <span class="text-sm lg:text-base font-bold text-amber-500 block">Temp. Bridging</span>
+                                <span class="text-[10px] lg:text-[11px] text-amber-600/70 block mt-0.5">(Hides under film)</span>
                             </div>
                         </div>
                         <div class="flex justify-between items-center h-[64px] border-b border-slate-700/50">
