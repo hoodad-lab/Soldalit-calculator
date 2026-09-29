@@ -56,6 +56,18 @@
                 <input type="number" id="exclusions" min="0" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Total area to exclude">
             </div>
 
+            <!-- Colour Group -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Colour</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <button type="button" class="btn-option active px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="colourGroup" data-value="white">White</button>
+                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="colourGroup" data-value="pg1">Colour group 1</button>
+                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="colourGroup" data-value="pg2">Colour group 2</button>
+                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="colourGroup" data-value="pg3">Colour group 3</button>
+                </div>
+                <p class="mt-2 text-xs text-slate-500">Soldalit is priced by colour group. Not sure which group your colour is in? Ask KEIM Australia.</p>
+            </div>
+
             <!-- Substrate Type -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">Substrate Type</label>
@@ -171,6 +183,7 @@
         texture: 'standard',
         condition: 'normal',
         baseCoat: 'soldalit',
+        colourGroup: 'white',
         labourRate: 400,
         productivity: 150
     };
@@ -191,6 +204,23 @@
     const alertIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`;
     const infoIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>`;
     const boxIcon = `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>`;
+
+    // Retail prices: KEIM Australia Price List 2026, ex GST. Paints per kg, Fixativ per litre.
+    // Soldalit is priced by colour group; Soldalit-Grob has one price for all colours;
+    // Contact-Plus, Contact-Plus-Grob and Fixativ do not vary by colour.
+    const PRICES = {
+        soldalit: { white: 43.77, pg1: 48.39, pg2: 57.67, pg3: 68.16 },
+        grob:     { white: 43.77, colour: 48.39 },
+        'contact-plus': 33.72,
+        'contact-plus-grob': 33.72,
+        fixativ: 38.72
+    };
+    const COLOUR_LABELS = { white: 'White', pg1: 'Colour group 1', pg2: 'Colour group 2', pg3: 'Colour group 3' };
+    const unitPrice = (product, colour) => {
+        if (product === 'soldalit') return PRICES.soldalit[colour];
+        if (product === 'grob') return colour === 'white' ? PRICES.grob.white : PRICES.grob.colour;
+        return PRICES[product];
+    };
 
     // Calculate Dynamic SVG elements via clean string concatenation to avoid syntax errors
     const getKeimCrackSVG = (baseCoat) => {
@@ -416,6 +446,10 @@
         const totalPaintL = coat1L + coat2L;
 
         // KEIM Costs
+        const costCoat1 = coat1Paint * unitPrice(state.baseCoat, state.colourGroup);
+        const costCoat2 = coat2Paint * unitPrice('soldalit', state.colourGroup);
+        const costFixativ = totalFixativL * unitPrice('fixativ');
+        const materialCost = costCoat1 + costCoat2 + costFixativ;
         const keimCoatsTotal = primerFixativ > 0 ? 3 : 2;
         const keimLabourDays = (netArea * keimCoatsTotal) / state.productivity;
         const keimLabourCost = keimLabourDays * state.labourRate;
@@ -443,6 +477,8 @@
             totalPaintL,
             substrateWarning, primerDescription, coat1DiluentText, coat2DiluentText,
             keimLabourDays, keimLabourCost,
+            materialCost, keimTotalProjectCost: materialCost + keimLabourCost,
+            priceLabel: 'Retail · ' + COLOUR_LABELS[state.colourGroup],
             acrylicLiters, acrylicLabourDays, acrylicLabourCost,
             baseCoat: state.baseCoat
         });
@@ -592,15 +628,19 @@
             </div>
             
             <div class="mt-6 pt-5 border-t border-emerald-500/50">
-                <h4 class="text-emerald-300 font-semibold mb-4 text-lg">Labour Estimate</h4>
+                <h4 class="text-emerald-300 font-semibold mb-4 text-lg">Project Cost Estimate (Ex. GST)</h4>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-emerald-400/90 text-sm sm:text-base">Application Time</span>
-                        <span class="text-emerald-300 font-medium text-base">${fmt(data.keimLabourDays)} Days</span>
+                        <span class="text-emerald-400/90 text-sm sm:text-base">Material Cost (${data.priceLabel})</span>
+                        <span class="text-emerald-300 font-medium text-base">$${fmtC(data.materialCost)}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-emerald-400/90 text-sm sm:text-base">Estimated Labour Cost</span>
-                        <span class="text-emerald-300 font-bold text-xl sm:text-2xl">$${fmtC(data.keimLabourCost)}</span>
+                        <span class="text-emerald-400/90 text-sm sm:text-base">Labour Cost (${fmt(data.keimLabourDays)} Days @ $${fmtC(data.labourRate)}/day)</span>
+                        <span class="text-emerald-300 font-medium text-base">$${fmtC(data.keimLabourCost)}</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-4 mt-4 border-t border-emerald-800/50">
+                        <span class="text-emerald-300 font-medium text-lg sm:text-xl">Total Estimated Project</span>
+                        <span class="text-emerald-300 font-bold text-2xl sm:text-3xl">$${fmtC(data.keimTotalProjectCost)}</span>
                     </div>
                 </div>
             </div>
@@ -608,7 +648,7 @@
                 <div class="shrink-0 mt-0.5">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
                 </div>
-                <p><strong>Note:</strong> Dark or intense colours may require an additional (third) coat depending on the soundness and uniformity of the substrate.</p>
+                <p><strong>Note:</strong> Material cost uses KEIM Australia 2026 retail prices for the selected colour group, ex GST. Dark or intense colours may require an additional (third) coat depending on the soundness and uniformity of the substrate.</p>
             </div>
         </div>
         `;
