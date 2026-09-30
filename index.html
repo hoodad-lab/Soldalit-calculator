@@ -56,16 +56,27 @@
                 <input type="number" id="exclusions" min="0" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Total area to exclude">
             </div>
 
-            <!-- Colour Group -->
+            <!-- Colour -->
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Colour Group</label>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <button type="button" class="btn-option active px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="colourGroup" data-value="white">White</button>
-                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="colourGroup" data-value="pg1">Group 1</button>
-                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="colourGroup" data-value="pg2">Group 2</button>
-                    <button type="button" class="btn-option px-4 py-3 rounded-lg border text-sm font-medium bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-left" data-group="colourGroup" data-value="pg3">Group 3</button>
+                <label for="colour-search" class="block text-sm font-medium text-slate-700 mb-2">Colour</label>
+                <div class="relative" id="colour-picker">
+                    <div class="flex items-center gap-3 w-full px-4 py-3 border border-slate-300 rounded-lg bg-white focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition-colors">
+                        <span id="colour-swatch" class="shrink-0 w-6 h-6 rounded-md border border-slate-300" style="background:#FFFFFF"></span>
+                        <input type="text" id="colour-search" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="colour-list" class="flex-1 min-w-0 bg-transparent focus:outline-none text-slate-800 placeholder:text-slate-400" placeholder="Type a KEIM colour, e.g. 9049 or Avantgarde 101">
+                        <button type="button" id="colour-clear" class="hidden shrink-0 text-slate-400 hover:text-slate-600 text-xl leading-none" aria-label="Clear colour">&times;</button>
+                    </div>
+                    <ul id="colour-list" role="listbox" class="hidden absolute z-30 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg py-1"></ul>
                 </div>
-                <p class="mt-2 text-xs text-slate-500">Soldalit is priced by colour group. Not sure which group your colour is in? Ask KEIM Australia.</p>
+                <p id="colour-status" class="mt-2 text-xs text-slate-500">Pick your colour and the price group is set for you.</p>
+                <div class="mt-3">
+                    <span class="block text-xs font-medium text-slate-500 mb-1.5">Price group</span>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" class="btn-option px-1 py-2.5 rounded-lg border text-xs sm:text-sm font-medium whitespace-nowrap bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-center active" data-group="colourGroup" data-value="white">White</button>
+                        <button type="button" class="btn-option px-1 py-2.5 rounded-lg border text-xs sm:text-sm font-medium whitespace-nowrap bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-center" data-group="colourGroup" data-value="pg1">Group 1</button>
+                        <button type="button" class="btn-option px-1 py-2.5 rounded-lg border text-xs sm:text-sm font-medium whitespace-nowrap bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-center" data-group="colourGroup" data-value="pg2">Group 2</button>
+                        <button type="button" class="btn-option px-1 py-2.5 rounded-lg border text-xs sm:text-sm font-medium whitespace-nowrap bg-white border-slate-200 text-slate-600 hover:border-slate-300 text-center" data-group="colourGroup" data-value="pg3">Group 3</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Substrate Type -->
@@ -184,6 +195,7 @@
         condition: 'normal',
         baseCoat: 'soldalit',
         colourGroup: 'white',
+        colourName: '',
         labourRate: 400,
         productivity: 150
     };
@@ -216,6 +228,357 @@
         fixativ: 38.72
     };
     const COLOUR_LABELS = { white: 'White', pg1: 'Colour group 1', pg2: 'Colour group 2', pg3: 'Colour group 3' };
+    const escapeHtml = (t) => String(t).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+    const GROUP_SHORT = { white: 'White', pg1: 'Group 1', pg2: 'Group 2', pg3: 'Group 3' };
+
+    // KEIM colours with their price group (pigment grade), from the keim.com.au Colours collection.
+    // [name, hex, price group 1-3]. Snapshot 29 Sep 2026, 344 colours.
+    const KEIM_COLOURS = [
+        ["Exclusiv 9008S", "#424243", 3],
+        ["Exclusiv 9033", "#F1D586", 3],
+        ["Exclusiv 9036", "#EDDBA5", 2],
+        ["Exclusiv 9037", "#EDE2B8", 1],
+        ["Exclusiv 9038", "#EDE6C6", 1],
+        ["Exclusiv 9049 (Wiradjuri Gold)", "#DEAB5C", 3],
+        ["Exclusiv 9051", "#EABD79", 3],
+        ["Exclusiv 9053", "#EBCD9B", 2],
+        ["Exclusiv 9055", "#ECDCB7", 1],
+        ["Exclusiv 9057", "#ECE1C8", 1],
+        ["Exclusiv 9058", "#E9E3D4", 1],
+        ["Exclusiv 9064", "#AE8955", 3],
+        ["Exclusiv 9066", "#C19A63", 3],
+        ["Exclusiv 9069", "#D0AF79", 3],
+        ["Exclusiv 9071 (Spinifex Resin)", "#E4C07E", 2],
+        ["Exclusiv 9073", "#E7CB92", 2],
+        ["Exclusiv 9075", "#EAD6AA", 1],
+        ["Exclusiv 9076", "#EBDEBB", 1],
+        ["Exclusiv 9077", "#E7DFC5", 1],
+        ["Exclusiv 9078", "#EAE3CD", 1],
+        ["Exclusiv 9084", "#B88758", 3],
+        ["Exclusiv 9087", "#CCA16D", 3],
+        ["Exclusiv 9089", "#DAAB78", 2],
+        ["Exclusiv 9090", "#E1B37C", 2],
+        ["Exclusiv 9091", "#DBBA8D", 2],
+        ["Exclusiv 9092", "#DBC3A0", 2],
+        ["Exclusiv 9095", "#E9D6B4", 1],
+        ["Exclusiv 9096", "#EADEC9", 1],
+        ["Exclusiv 9097", "#EFE3D1", 1],
+        ["Exclusiv 9102", "#8F6E58", 3],
+        ["Exclusiv 9103", "#A67755", 3],
+        ["Exclusiv 9105", "#C88659", 3],
+        ["Exclusiv 9108", "#D29D6D", 3],
+        ["Exclusiv 9110", "#E0B989", 2],
+        ["Exclusiv 9112", "#E9C79D", 2],
+        ["Exclusiv 9115", "#EBD5B4", 1],
+        ["Exclusiv 9117", "#EDDDC6", 1],
+        ["Exclusiv 9122 (Karijini Red)", "#956046", 3],
+        ["Exclusiv 9123 (Purnululu Earth)", "#A36B4A", 3],
+        ["Exclusiv 9125", "#B9886B", 3],
+        ["Exclusiv 9129", "#CEA891", 2],
+        ["Exclusiv 9132", "#E0C4AD", 1],
+        ["Exclusiv 9135", "#E6D6C5", 1],
+        ["Exclusiv 9136", "#ECE0D1", 1],
+        ["Exclusiv 9137", "#ECE4D8", 1],
+        ["Exclusiv 9144 (Arrernte Clay)", "#B47D5C", 3],
+        ["Exclusiv 9146", "#CC9374", 2],
+        ["Exclusiv 9149", "#DFAA87", 2],
+        ["Exclusiv 9153", "#EAC4A6", 1],
+        ["Exclusiv 9154", "#E9CFB8", 1],
+        ["Exclusiv 9156", "#ECDDCD", 1],
+        ["Exclusiv 9157", "#E8E1D5", 1],
+        ["Exclusiv 9162", "#9F5945", 3],
+        ["Exclusiv 9164", "#BC7058", 3],
+        ["Exclusiv 9166", "#D18A73", 2],
+        ["Exclusiv 9169", "#DEA58D", 2],
+        ["Exclusiv 9171", "#E2B5A3", 2],
+        ["Exclusiv 9174", "#EACCBC", 1],
+        ["Exclusiv 9176", "#EBD8CD", 1],
+        ["Exclusiv 9177", "#ECE3DA", 1],
+        ["Exclusiv 9182 (Pindan Oxide)", "#916252", 3],
+        ["Exclusiv 9183", "#A67568", 3],
+        ["Exclusiv 9184", "#B87C69", 3],
+        ["Exclusiv 9186", "#BD8C7B", 2],
+        ["Exclusiv 9187", "#C59E8C", 2],
+        ["Exclusiv 9190", "#D4B3A5", 1],
+        ["Exclusiv 9192", "#DAC2B6", 1],
+        ["Exclusiv 9195", "#E7D8CD", 1],
+        ["Exclusiv 9197 (K'Gari Sand)", "#E8E1D9", 1],
+        ["Exclusiv 9200", "#6F4B45", 3],
+        ["Exclusiv 9201", "#7F5E59", 3],
+        ["Exclusiv 9203", "#8F736E", 3],
+        ["Exclusiv 9206", "#AA938B", 2],
+        ["Exclusiv 9210", "#C7B4AC", 1],
+        ["Exclusiv 9213", "#D9CCC3", 1],
+        ["Exclusiv 9215", "#E0D6CE", 1],
+        ["Exclusiv 9217", "#E5E1D9", 1],
+        ["Exclusiv 9225", "#998A86", 2],
+        ["Exclusiv 9229", "#BEB1B0", 1],
+        ["Exclusiv 9233", "#D3CACB", 1],
+        ["Exclusiv 9243", "#9D7F5C", 3],
+        ["Exclusiv 9245", "#B39570", 3],
+        ["Exclusiv 9248", "#C1A380", 2],
+        ["Exclusiv 9249", "#C3AB8E", 2],
+        ["Exclusiv 9251", "#D3C0A2", 2],
+        ["Exclusiv 9253", "#DAC7AF", 1],
+        ["Exclusiv 9255", "#E2D6C3", 1],
+        ["Exclusiv 9263", "#8E785C", 3],
+        ["Exclusiv 9265", "#A69373", 3],
+        ["Exclusiv 9268", "#BEAC8E", 2],
+        ["Exclusiv 9271", "#CEC0A5", 2],
+        ["Exclusiv 9274", "#E0D2BD", 1],
+        ["Exclusiv 9276", "#E9DDCA", 1],
+        ["Exclusiv 9283", "#857560", 3],
+        ["Exclusiv 9285", "#A3937D", 3],
+        ["Exclusiv 9288", "#B6A792", 2],
+        ["Exclusiv 9292", "#CFC4B4", 1],
+        ["Exclusiv 9294", "#DBD3C6", 1],
+        ["Exclusiv 9295", "#E1D8CB", 1],
+        ["Exclusiv 9296", "#E3DDD3", 1],
+        ["Exclusiv 9298", "#ECE6DB", 1],
+        ["Exclusiv 9304", "#9A8D79", 3],
+        ["Exclusiv 9307", "#AAA192", 2],
+        ["Exclusiv 9310", "#C1B9A7", 2],
+        ["Exclusiv 9312", "#CFC8B7", 1],
+        ["Exclusiv 9314", "#DBD4C6", 1],
+        ["Exclusiv 9317", "#E8E4D9", 1],
+        ["Exclusiv 9323", "#857A5C", 3],
+        ["Exclusiv 9325", "#A5905F", 3],
+        ["Exclusiv 9328", "#C3A561", 3],
+        ["Exclusiv 9329", "#CDB475", 3],
+        ["Exclusiv 9330", "#CCB987", 2],
+        ["Exclusiv 9332", "#D4C6A0", 2],
+        ["Exclusiv 9335", "#E1DAC2", 1],
+        ["Exclusiv 9337", "#E9E5D4", 1],
+        ["Exclusiv 9339 (Bunda Cliffs)", "#EEE9DC", 1],
+        ["Exclusiv 9345", "#A19774", 3],
+        ["Exclusiv 9348", "#B4AB8C", 2],
+        ["Exclusiv 9351", "#C7BC9E", 2],
+        ["Exclusiv 9354", "#D9D0B9", 1],
+        ["Exclusiv 9357", "#E8E3D4", 1],
+        ["Exclusiv 9367", "#ABA26A", 3],
+        ["Exclusiv 9369", "#BDB581", 3],
+        ["Exclusiv 9373", "#D1CCA5", 2],
+        ["Exclusiv 9375", "#E1DCBD", 1],
+        ["Exclusiv 9382 (Tarkine Coal)", "#6B6D61", 3],
+        ["Exclusiv 9383", "#7A7F6B", 3],
+        ["Exclusiv 9385", "#949980", 3],
+        ["Exclusiv 9389", "#AFB69D", 2],
+        ["Exclusiv 9392", "#C9CCB9", 1],
+        ["Exclusiv 9395", "#DADBCC", 1],
+        ["Exclusiv 9396", "#E3E2D5", 1],
+        ["Exclusiv 9398", "#E8E6DD", 1],
+        ["Exclusiv 9402 (Wollemi Green)", "#627763", 3],
+        ["Exclusiv 9406 (Mallee Scrub)", "#90A085", 3],
+        ["Exclusiv 9410", "#B4BCA5", 2],
+        ["Exclusiv 9412 (Lomandra Grey)", "#C5CBB7", 2],
+        ["Exclusiv 9430 (Kakadu Flora)", "#98BEAB", 2],
+        ["Exclusiv 9432", "#B6CFC2", 2],
+        ["Exclusiv 9435", "#CBDACC", 1],
+        ["Exclusiv 9436", "#DAE2D7", 1],
+        ["Exclusiv 9437", "#E7E7DD", 1],
+        ["Exclusiv 9448", "#8AB2B5", 2],
+        ["Exclusiv 9451 (Blue Gum Haza)", "#AAC3C3", 2],
+        ["Exclusiv 9454", "#C5D4D1", 1],
+        ["Exclusiv 9456", "#D5DCD6", 1],
+        ["Exclusiv 9457", "#DEE1D9", 1],
+        ["Exclusiv 9463", "#6A8187", 3],
+        ["Exclusiv 9466", "#8E9999", 2],
+        ["Exclusiv 9468", "#A3A9A7", 2],
+        ["Exclusiv 9471", "#BEBEB8", 1],
+        ["Exclusiv 9473", "#D0D0C9", 1],
+        ["Exclusiv 9475", "#D8D7CF", 1],
+        ["Exclusiv 9477", "#E7E5DE", 1],
+        ["Exclusiv 9482", "#647186", 3],
+        ["Exclusiv 9486", "#8F9AA9", 2],
+        ["Exclusiv 9488", "#A7AFBA", 2],
+        ["Exclusiv 9490", "#B9BFC4", 1],
+        ["Exclusiv 9493", "#C8CCCD", 1],
+        ["Exclusiv 9494", "#D5D3D0", 1],
+        ["Exclusiv 9497", "#E0E0DB", 1],
+        ["Exclusiv 9505 (Ember Ash)", "#8E908B", 3],
+        ["Exclusiv 9510", "#B6BBB7", 2],
+        ["Exclusiv 9514", "#D0D1CD", 1],
+        ["Exclusiv 9516", "#DCDCD9", 1],
+        ["Exclusiv 9523 (Gariwerd Shadow)", "#86847B", 3],
+        ["Exclusiv 9525", "#A09C8D", 2],
+        ["Exclusiv 9526", "#A39C8A", 2],
+        ["Exclusiv 9529", "#BAB4A1", 2],
+        ["Exclusiv 9531", "#C6C1B0", 2],
+        ["Exclusiv 9533", "#D6CEBF", 1],
+        ["Exclusiv 9536 (Ngunnawal Stone)", "#E2DDCE", 1],
+        ["Exclusiv 9541 (Gunditjmara Basalt)", "#615C54", 3],
+        ["Exclusiv 9543 (Wurundjeri Char)", "#817D75", 3],
+        ["Exclusiv 9546", "#9E978C", 2],
+        ["Exclusiv 9550", "#BDB8B0", 2],
+        ["Exclusiv 9552", "#CDC7BE", 1],
+        ["Exclusiv 9554", "#D4CFC4", 1],
+        ["Exclusiv 9555", "#D8D3C7", 1],
+        ["Exclusiv 9556 (Ku-Ring-Gai Rock)", "#E2DDD2", 1],
+        ["Exclusiv 9564 (Coolamon Bark)", "#918781", 3],
+        ["Exclusiv 9567", "#A9A19B", 2],
+        ["Exclusiv 9569", "#BBB4B0", 2],
+        ["Exclusiv 9572", "#CAC4C0", 1],
+        ["Exclusiv 9574", "#DAD4D2", 1],
+        ["Exclusiv 9576", "#E2DCD7", 1],
+        ["Exclusiv 9582", "#757676", 3],
+        ["Exclusiv 9585", "#969593", 2],
+        ["Exclusiv 9590", "#BAB8B3", 2],
+        ["Exclusiv 9592", "#C9C8C5", 1],
+        ["Exclusiv 9595", "#DADCD9", 1],
+        ["Exclusiv 9870 (Mungo Ash)", "#E9E7E1", 1],
+        ["Avantgarde 16", "#E0D2BD", 1],
+        ["Avantgarde 18", "#DAC7AF", 1],
+        ["Avantgarde 23", "#C3AB8E", 2],
+        ["Avantgarde 30", "#D8D3C7", 1],
+        ["Avantgarde 31", "#D4CFC4", 1],
+        ["Avantgarde 32", "#BDB8B0", 2],
+        ["Avantgarde 33", "#AFA294", 2],
+        ["Avantgarde 35", "#817D75", 3],
+        ["Avantgarde 40", "#EDE6C6", 1],
+        ["Avantgarde 41", "#EAD6AA", 1],
+        ["Avantgarde 42", "#EAD596", 3],
+        ["Avantgarde 52", "#DAAB78", 2],
+        ["Avantgarde 54", "#B47D5C", 3],
+        ["Avantgarde 61", "#E9D6B4", 1],
+        ["Avantgarde 62", "#E9D3B1", 1],
+        ["Avantgarde 63", "#C7BDBD", 1],
+        ["Avantgarde 64", "#D7C2BE", 1],
+        ["Avantgarde 65", "#E2B6A3", 1],
+        ["Avantgarde 66", "#DFAE8F", 2],
+        ["Avantgarde 67", "#BD8C7B", 2],
+        ["Avantgarde 69", "#C9A19B", 2],
+        ["Avantgarde 70", "#DBBA8D", 2],
+        ["Avantgarde 71 (Gulgong Chalk)", "#EAE9E5", 1],
+        ["Avantgarde 72", "#E0B989", 2],
+        ["Avantgarde 75", "#9E8783", 2],
+        ["Avantgarde 76", "#988C78", 3],
+        ["Avantgarde 77", "#9A786A", 3],
+        ["Avantgarde 79", "#7CA0B0", 3],
+        ["Avantgarde 92", "#C9CFC3", 1],
+        ["Avantgarde 94", "#8199A1", 3],
+        ["Avantgarde 95", "#A67568", 3],
+        ["Avantgarde 96", "#CCA16D", 3],
+        ["Avantgarde 97", "#C7AEA3", 2],
+        ["Avantgarde 101", "#BBB89B", 2],
+        ["Avantgarde 102", "#CEC8B4", 1],
+        ["Avantgarde 103", "#937D5F", 3],
+        ["Avantgarde 104", "#B58F76", 3],
+        ["Avantgarde 105", "#9A947E", 3],
+        ["Avantgarde 107", "#BEAC8E", 2],
+        ["Avantgarde 111", "#EADEC9", 1],
+        ["Avantgarde 114", "#E1DAC2", 1],
+        ["Avantgarde 121", "#F0D287", 3],
+        ["Avantgarde 122", "#E2B35B", 3],
+        ["Avantgarde 124", "#B17D54", 3],
+        ["Avantgarde 131 (Bunya Pine)", "#698360", 3],
+        ["Avantgarde 133", "#7C5D52", 3],
+        ["Avantgarde 138", "#C88659", 3],
+        ["Avantgarde 140", "#C1CACF", 1],
+        ["Avantgarde 141", "#B0BCC5", 2],
+        ["Avantgarde 142", "#A4BDD4", 2],
+        ["Avantgarde 159", "#E1B37C", 2],
+        ["Avantgarde 168", "#A4BB7B", 3],
+        ["Avantgarde 176", "#568F8E", 3],
+        ["Avantgarde 184", "#546EB3", 3],
+        ["Avantgarde 190", "#607092", 3],
+        ["Avantgarde 195", "#BC7058", 3],
+        ["Avantgarde 202", "#EAB381", 3],
+        ["Avantgarde 208", "#B4B59C", 2],
+        ["Avantgarde 226", "#939F8D", 3],
+        ["Avantgarde 231", "#B4BED7", 2],
+        ["Avantgarde 235", "#92A2BC", 3],
+        ["Avantgarde 240", "#7590B1", 3],
+        ["Avantgarde 246", "#E7E0BD", 1],
+        ["Avantgarde 247", "#A2BAC0", 2],
+        ["Avantgarde 248", "#C5D1A6", 2],
+        ["Historisch 50001", "#B1B1AB", 2],
+        ["Historisch 50002", "#BABCBA", 1],
+        ["Historisch 50003", "#BCBCB6", 1],
+        ["Historisch 50004", "#948C7D", 3],
+        ["Historisch 50005", "#A49C91", 2],
+        ["Historisch 50006", "#C1BAAF", 2],
+        ["Historisch 50007", "#C8C0B6", 1],
+        ["Historisch 50008", "#D2CABE", 1],
+        ["Historisch 50009", "#A29686", 2],
+        ["Historisch 50010", "#BBB2A5", 2],
+        ["Historisch 50011", "#C3B9A6", 2],
+        ["Historisch 50012", "#C7C0B0", 1],
+        ["Historisch 50013", "#D4CAB8", 1],
+        ["Historisch 50014", "#A8A390", 2],
+        ["Historisch 50015", "#ADA590", 2],
+        ["Historisch 50016", "#B7B2A2", 2],
+        ["Historisch 50017", "#B9AD97", 2],
+        ["Historisch 50018", "#C4B497", 2],
+        ["Historisch 50019", "#CCBFA8", 2],
+        ["Historisch 50020", "#DED2BF", 1],
+        ["Historisch 50021", "#B59774", 3],
+        ["Historisch 50022", "#CFB795", 2],
+        ["Historisch 50023", "#DEC5A1", 2],
+        ["Historisch 50024", "#9A7A50", 3],
+        ["Historisch 50025", "#AA7E4F", 3],
+        ["Historisch 50026", "#CAA06D", 3],
+        ["Historisch 50027", "#C7A479", 2],
+        ["Historisch 50028", "#D2AE7F", 2],
+        ["Historisch 50029", "#7C645B", 3],
+        ["Historisch 50030", "#8A6C63", 3],
+        ["Naturstein S003", "#B89665", 3],
+        ["Naturstein S005", "#AF9772", 3],
+        ["Naturstein S007", "#AF9D7E", 3],
+        ["Naturstein S017", "#B9A080", 2],
+        ["Naturstein S019", "#BFA888", 2],
+        ["Naturstein S041", "#A76753", 3],
+        ["Naturstein S043", "#A06950", 3],
+        ["Naturstein S049", "#C48E67", 3],
+        ["Naturstein S053", "#946B59", 3],
+        ["Naturstein S057", "#9E7966", 3],
+        ["Naturstein S059", "#9B7969", 3],
+        ["Naturstein S063", "#B18A78", 2],
+        ["Naturstein S065", "#B29280", 2],
+        ["Naturstein S066", "#B89A89", 2],
+        ["Naturstein S068", "#B58F76", 3],
+        ["Naturstein S070", "#CBA892", 2],
+        ["Naturstein S071", "#886656", 3],
+        ["Naturstein S073", "#876B58", 3],
+        ["Naturstein S075", "#8F715C", 3],
+        ["Naturstein S079", "#A7896E", 3],
+        ["Naturstein S080", "#988E8A", 2],
+        ["Naturstein S081", "#88746E", 3],
+        ["Naturstein S083", "#907D6F", 3],
+        ["Naturstein S085", "#9E8173", 3],
+        ["Naturstein S087", "#9E887B", 3],
+        ["Naturstein S089", "#B19B8F", 2],
+        ["Naturstein S103", "#A48D6C", 3],
+        ["Naturstein S105", "#B19F84", 2],
+        ["Naturstein S107", "#B7A687", 2],
+        ["Naturstein S109", "#CBBA9D", 2],
+        ["Naturstein S110", "#837462", 3],
+        ["Naturstein S112", "#9D8D78", 3],
+        ["Naturstein S113", "#9B8D77", 3],
+        ["Naturstein S114", "#B2A390", 2],
+        ["Naturstein S115", "#B3A086", 2],
+        ["Naturstein S117", "#B5A893", 2],
+        ["Naturstein S119", "#C9BBA5", 2],
+        ["Naturstein S122", "#D2C7B7", 1],
+        ["Naturstein S143", "#A09072", 3],
+        ["Naturstein S145", "#958E77", 3],
+        ["Naturstein S147", "#9F9573", 3],
+        ["Naturstein S148", "#C0B28C", 2],
+        ["Naturstein S149", "#A59678", 3],
+        ["Naturstein S153", "#7C8275", 3],
+        ["Naturstein S155", "#7D7C70", 3],
+        ["Naturstein S157", "#8D8E80", 3],
+        ["Naturstein S161", "#9A927D", 3],
+        ["Naturstein S163", "#ABA48F", 2],
+        ["Naturstein S165", "#ABA592", 2],
+        ["Naturstein S168", "#D0CBB7", 1],
+        ["Naturstein S183", "#7D7B78", 3],
+        ["Naturstein S187", "#AEA89D", 2],
+        ["Naturstein S189", "#C2BEB0", 2],
+        ["Naturstein S193", "#8F8B7D", 3],
+        ["Naturstein S195", "#9B988C", 2],
+        ["Naturstein S198", "#B1A995", 2],
+        ["Naturstein S199", "#B5B09F", 2]
+    ];
     const unitPrice = (product, colour) => {
         if (product === 'soldalit') return PRICES.soldalit[colour];
         if (product === 'grob') return colour === 'white' ? PRICES.grob.white : PRICES.grob.colour;
@@ -367,6 +730,7 @@
             state[group] = value;
             document.querySelectorAll(`.btn-option[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
             e.currentTarget.classList.add('active');
+            if (group === 'colourGroup') clearColour(false);
             calculate();
         });
     });
@@ -478,7 +842,7 @@
             substrateWarning, primerDescription, coat1DiluentText, coat2DiluentText,
             keimLabourDays, keimLabourCost,
             materialCost, keimTotalProjectCost: materialCost + keimLabourCost,
-            priceLabel: 'Retail · ' + COLOUR_LABELS[state.colourGroup],
+            priceLabel: (state.colourName ? escapeHtml(state.colourName) + ' · ' + GROUP_SHORT[state.colourGroup] : GROUP_SHORT[state.colourGroup]) + ' · retail price',
             acrylicLiters, acrylicLabourDays, acrylicLabourCost,
             baseCoat: state.baseCoat
         });
@@ -631,7 +995,7 @@
                 <h4 class="text-emerald-300 font-semibold mb-4 text-lg">Project Cost Estimate (Ex. GST)</h4>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-emerald-400/90 text-sm sm:text-base">Material Cost (${data.priceLabel})</span>
+                        <span class="text-emerald-400/90 text-sm sm:text-base">Material Cost<span class="block text-xs text-emerald-400/60 mt-0.5">${data.priceLabel}</span></span>
                         <span class="text-emerald-300 font-medium text-base">$${fmtC(data.materialCost)}</span>
                     </div>
                     <div class="flex justify-between items-center">
@@ -895,6 +1259,116 @@
 
     // Initial render
     renderWalls();
+
+    // ---- Colour picker: choosing a colour sets its price group automatically ----
+    const colourSearch = document.getElementById('colour-search');
+    const colourList = document.getElementById('colour-list');
+    const colourSwatch = document.getElementById('colour-swatch');
+    const colourClear = document.getElementById('colour-clear');
+    const colourStatus = document.getElementById('colour-status');
+    const DEFAULT_STATUS = 'Pick your colour and the price group is set for you.';
+    const norm = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const COLOUR_INDEX = KEIM_COLOURS.map(c => ({ name: c[0], hex: c[1], group: 'pg' + c[2], key: norm(c[0]) }));
+    let colourMatches = [];
+    let colourActive = -1;
+
+
+    function setGroupButton(value) {
+        state.colourGroup = value;
+        document.querySelectorAll('.btn-option[data-group="colourGroup"]').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-value') === value);
+        });
+    }
+
+    function findColours(q) {
+        const tokens = norm(q).split(' ').filter(Boolean);
+        if (!tokens.length) return COLOUR_INDEX.slice(0, 60);
+        return COLOUR_INDEX.filter(c => tokens.every(t => c.key.split(' ').some(w => w.startsWith(t)) || c.key.includes(t))).slice(0, 60);
+    }
+
+    function renderColourList() {
+        if (!colourMatches.length) {
+            colourList.innerHTML = '<li class="px-4 py-3 text-sm text-slate-500">No KEIM colour matches. Try the number, e.g. 9049.</li>';
+        } else {
+            colourList.innerHTML = colourMatches.map((c, i) => `
+                <li role="option" data-i="${i}" aria-selected="${i === colourActive}" class="colour-opt flex items-center gap-3 px-4 py-2 cursor-pointer text-sm ${i === colourActive ? 'bg-emerald-50' : 'hover:bg-slate-50'}">
+                    <span class="shrink-0 w-5 h-5 rounded border border-black/10" style="background:${c.hex}"></span>
+                    <span class="flex-1 min-w-0 truncate text-slate-800">${escapeHtml(c.name)}</span>
+                    <span class="shrink-0 text-xs text-slate-500">${GROUP_SHORT[c.group]}</span>
+                </li>`).join('');
+        }
+        colourList.classList.remove('hidden');
+        colourSearch.setAttribute('aria-expanded', 'true');
+        const act = colourList.querySelector('[aria-selected="true"]');
+        if (act) act.scrollIntoView({ block: 'nearest' });
+    }
+
+    function closeColourList() {
+        colourList.classList.add('hidden');
+        colourSearch.setAttribute('aria-expanded', 'false');
+        colourActive = -1;
+    }
+
+    function pickColour(c) {
+        state.colourName = c.name;
+        colourSearch.value = c.name;
+        colourSwatch.style.background = c.hex;
+        colourClear.classList.remove('hidden');
+        setGroupButton(c.group);
+        colourStatus.innerHTML = `<span class="text-emerald-700 font-medium">${escapeHtml(c.name)} is in price ${GROUP_SHORT[c.group].toLowerCase()}.</span> Price updated.`;
+        closeColourList();
+        colourSearch.blur();
+        calculate();
+    }
+
+    function clearColour(resetGroup) {
+        state.colourName = '';
+        colourSearch.value = '';
+        colourSwatch.style.background = '#FFFFFF';
+        colourClear.classList.add('hidden');
+        colourStatus.textContent = DEFAULT_STATUS;
+        if (resetGroup) { setGroupButton('white'); calculate(); }
+    }
+
+    colourSearch.addEventListener('focus', () => { colourMatches = findColours(state.colourName ? '' : colourSearch.value); colourActive = -1; renderColourList(); if (state.colourName) colourSearch.select(); });
+    colourSearch.addEventListener('click', () => { if (state.colourName && colourSearch.value === state.colourName) colourSearch.select(); if (colourList.classList.contains('hidden')) { colourMatches = findColours(''); renderColourList(); } });
+    colourSearch.addEventListener('input', () => { colourMatches = findColours(colourSearch.value); colourActive = colourMatches.length ? 0 : -1; renderColourList(); });
+    colourSearch.addEventListener('keydown', (e) => {
+        if (colourList.classList.contains('hidden') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { colourMatches = findColours(colourSearch.value); renderColourList(); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); colourActive = Math.min(colourActive + 1, colourMatches.length - 1); renderColourList(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); colourActive = Math.max(colourActive - 1, 0); renderColourList(); }
+        else if (e.key === 'Enter') { e.preventDefault(); if (colourMatches[colourActive]) pickColour(colourMatches[colourActive]); }
+        else if (e.key === 'Escape') { closeColourList(); colourSearch.blur(); }
+    });
+    colourList.addEventListener('mousedown', (e) => {
+        const li = e.target.closest('.colour-opt');
+        if (!li) return;
+        e.preventDefault();
+        pickColour(colourMatches[+li.dataset.i]);
+    });
+    colourClear.addEventListener('click', () => clearColour(true));
+    document.addEventListener('mousedown', (e) => {
+        if (!document.getElementById('colour-picker').contains(e.target)) {
+            closeColourList();
+            if (state.colourName && colourSearch.value !== state.colourName) colourSearch.value = state.colourName;
+            if (!state.colourName) colourSearch.value = '';
+        }
+    });
+    colourSearch.addEventListener('blur', () => setTimeout(() => {
+        if (document.activeElement === colourSearch) return;
+        closeColourList();
+        colourSearch.value = state.colourName || '';
+    }, 150));
+
+    // Deep link: ?colour=avantgarde-101 (or "Avantgarde 101") preselects that colour.
+    (function preselectColour() {
+        const q = new URLSearchParams(location.search).get('colour') || new URLSearchParams(location.search).get('color');
+        if (!q) return;
+        const k = norm(q);
+        const hit = COLOUR_INDEX.find(c => c.key === k) || COLOUR_INDEX.find(c => c.key.startsWith(k + ' ')) || COLOUR_INDEX.find(c => c.key.startsWith(k));
+        if (hit) pickColour(hit);
+    })();
+
 </script>
 </body>
 </html>
