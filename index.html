@@ -770,7 +770,7 @@
         // KEIM TDS (Soldalit): approx. 0.35-0.5 kg/m2 for two coats on smooth surfaces -> 0.2 kg/m2 per coat
         const coverages = {
             'soldalit': 5,
-            'grob': 5,
+            'grob': 4,   // KEIM TDS Soldalit-Grob: approx. 0.25 kg/m2 for one coat
             'contact-plus': 2.5,
             'contact-plus-grob': 2.0
         };
@@ -813,9 +813,10 @@
         let coat2DiluentText = 'Apply undiluted.';
         
         // KEIM TDS: base coat undiluted or with up to 5% Soldalit-Fixativ (up to 10% on highly absorbent substrates); top coat undiluted
-        const baseDilution = (state.condition === 'normal') ? 0.05 : 0.10;
+        // Soldalit-Grob and Contact-Plus: max 5% Fixativ (Grob TDS); Soldalit: up to 10% on highly absorbent substrates
+        const baseDilution = (state.condition === 'normal' || state.baseCoat !== 'soldalit') ? 0.05 : 0.10;
         coat1Diluent = coat1Paint * baseDilution;
-        coat1DiluentText = state.condition === 'normal'
+        coat1DiluentText = baseDilution === 0.05
             ? `Apply undiluted, or thin with up to 5% Soldalit-Fixativ (approx. 50 ml per 1 kg of paint) depending on absorbency. Allow for up to ${coat1Diluent.toLocaleString('en-AU', {maximumFractionDigits: 1})} L.`
             : `Thin with up to 10% Soldalit-Fixativ (approx. 100 ml per 1 kg of paint) for this absorbent surface. Allow for up to ${coat1Diluent.toLocaleString('en-AU', {maximumFractionDigits: 1})} L.`;
         coat2DiluentText = 'Apply undiluted. Wait at least 12 hours after the base coat (at 23 °C / 50% RH; longer in cool or humid weather).';
