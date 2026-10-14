@@ -56,6 +56,13 @@
                 <input type="number" id="exclusions" min="0" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 transition-colors" placeholder="Total area to exclude">
             </div>
 
+            <!-- Wastage -->
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Wastage allowance (%)</label>
+                <input type="number" id="wastage" min="0" max="50" step="1" value="10" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:outline-none focus:border-emerald-500 transition-colors">
+                <p class="text-xs text-slate-500 mt-1.5">Added to all paint and Fixativ quantities for spills, roller and spray loss. 10% is typical.</p>
+            </div>
+
             <!-- Colour -->
             <div>
                 <label for="colour-search" class="block text-sm font-medium text-slate-700 mb-2">Colour</label>
@@ -190,6 +197,7 @@
     let state = {
         walls: [{ id: 1, width: '', height: '' }],
         exclusions: '',
+        wastage: 10,
         substrateType: 'bare',
         texture: 'standard',
         condition: 'normal',
@@ -204,6 +212,8 @@
     const wallsContainer = document.getElementById('walls-container');
     const addWallBtn = document.getElementById('add-wall-btn');
     const exclusionsInput = document.getElementById('exclusions');
+    const wastageInput = document.getElementById('wastage');
+    wastageInput.addEventListener('input', (e) => { const v = parseFloat(e.target.value); state.wastage = (v >= 0 && v <= 50) ? v : 10; calculate(); });
     const optionButtons = document.querySelectorAll('.btn-option');
     const labourRateInput = document.getElementById('labour-rate');
     const productivityInput = document.getElementById('productivity');
@@ -757,8 +767,9 @@
         resultsPopulated.classList.remove('hidden');
         comparisonContainer.classList.remove('hidden');
 
+        // KEIM TDS (Soldalit): approx. 0.35-0.5 kg/m2 for two coats on smooth surfaces -> 0.2 kg/m2 per coat
         const coverages = {
-            'soldalit': 6,
+            'soldalit': 5,
             'grob': 5,
             'contact-plus': 2.5,
             'contact-plus-grob': 2.0
@@ -772,25 +783,28 @@
         };
 
         const coat1Rate = coverages[state.baseCoat];
-        const coat2Rate = 6;
-        const paintDensity = 1.4;
+        const coat2Rate = 5;
+        const paintDensity = 1.6;   // KEIM TDS: approx. 1.5-1.7 g/cm3
+        // Rough or textured surfaces use more paint (KEIM TDS: medium-rough and rough surfaces increase consumption)
+        const textureFactor = (state.texture === 'textured' ? 1.25 : 1) * (1 + (state.wastage || 0) / 100);
         const fixativDensity = 1.0;
 
-        const coat1Paint = netArea / coat1Rate;
+        const coat1Paint = netArea / coat1Rate * textureFactor;
         const coat1L = coat1Paint / paintDensity;
-        const coat2Paint = netArea / coat2Rate;
+        const coat2Paint = netArea / coat2Rate * textureFactor;
         const coat2L = coat2Paint / paintDensity;
         const isSameProduct = state.baseCoat === 'soldalit';
 
         let primerFixativ = 0;
         let primerDescription = '';
         
+        // KEIM TDS (Soldalit-Fixativ): prime highly absorbent substrates undiluted, approx. 0.15 L/m2 on smooth substrates
         if (state.condition === 'absorbent') {
-            primerFixativ = netArea / 5;
-            primerDescription = 'Apply undiluted to consolidate and satisfy high absorption.';
+            primerFixativ = netArea * 0.15 * textureFactor;
+            primerDescription = 'Apply undiluted (approx. 0.15 L/m² on smooth surfaces; test a sample area to confirm). Allow to dry before the base coat.';
         } else if (state.condition === 'dusting') {
-            primerFixativ = (netArea / 5) / 2;
-            primerDescription = 'Dilute Fixativ with clean cold water at a 1:1 ratio (equal parts) and apply as a primer.';
+            primerFixativ = netArea * 0.15 * textureFactor;
+            primerDescription = 'First remove all chalking and loose limewash (brush down or pressure wash until the surface is sound and no longer marks the hand) &ndash; Soldalit must go on a sound, non-chalking surface. Then prime undiluted with Soldalit-Fixativ, approx. 0.15 L/m².';
         }
 
         let coat1Diluent = 0;
@@ -798,12 +812,13 @@
         let coat1DiluentText = 'Apply undiluted.';
         let coat2DiluentText = 'Apply undiluted.';
         
-        if (state.texture === 'textured') {
-            coat1Diluent = coat1Paint * 0.20;
-            coat2Diluent = coat2Paint * 0.05;
-            coat1DiluentText = `Dilute with Fixativ at a ratio of 1:5 (Add approx 200ml Fixativ per 1kg of paint). Required: ${coat1Diluent.toLocaleString('en-US', {maximumFractionDigits: 1})} kg.`;
-            coat2DiluentText = `Dilute with Fixativ at a ratio of 1:20 (Add approx 50ml Fixativ per 1kg of paint). Required: ${coat2Diluent.toLocaleString('en-US', {maximumFractionDigits: 1})} kg.`;
-        }
+        // KEIM TDS: base coat undiluted or with up to 5% Soldalit-Fixativ (up to 10% on highly absorbent substrates); top coat undiluted
+        const baseDilution = (state.condition === 'normal') ? 0.05 : 0.10;
+        coat1Diluent = coat1Paint * baseDilution;
+        coat1DiluentText = state.condition === 'normal'
+            ? `Apply undiluted, or thin with up to 5% Soldalit-Fixativ (approx. 50 ml per 1 kg of paint) depending on absorbency. Allow for up to ${coat1Diluent.toLocaleString('en-AU', {maximumFractionDigits: 1})} L.`
+            : `Thin with up to 10% Soldalit-Fixativ (approx. 100 ml per 1 kg of paint) for this absorbent surface. Allow for up to ${coat1Diluent.toLocaleString('en-AU', {maximumFractionDigits: 1})} L.`;
+        coat2DiluentText = 'Apply undiluted. Wait at least 12 hours after the base coat (at 23 °C / 50% RH; longer in cool or humid weather).';
 
         const totalFixativ = primerFixativ + coat1Diluent + coat2Diluent;
         const totalFixativL = totalFixativ / fixativDensity;
@@ -819,17 +834,18 @@
         const keimLabourCost = keimLabourDays * state.labourRate;
         
         // Acrylic Costs
-        const acrylicLiters = (netArea / 10) + ((netArea / 4) * 2);
+        const acrylicLiters = ((netArea / 10) + ((netArea / 4) * 2)) * (1 + (state.wastage || 0) / 100);
         const acrylicCoatsTotal = 3; 
         const acrylicLabourDays = (netArea * acrylicCoatsTotal) / state.productivity;
         const acrylicLabourCost = acrylicLabourDays * state.labourRate;
 
         let substrateWarning = state.substrateType === 'painted' 
             ? 'Previously Painted Substrate: Ensure existing coating is sound, clean, and perform a cross-cut adhesion test. Remove any flaking material.' 
-            : 'Bare Substrate: Ensure new cement render has cured for at least 15 days (28 days for lime render) before application.';
+            : 'Bare Substrate: Ensure new cement render has cured for at least 15 days (28 days for lime render). New render and repair areas generally need pre-treatment with KEIM Fluat-10, which also removes any sintered skin. Apply at 5 °C or above, out of direct sun, wind and rain.';
 
         renderResultsHTML({
             netArea,
+            wastage: state.wastage,
             labourRate: state.labourRate,
             productivity: state.productivity,
             coat1Name: productNames[state.baseCoat],
@@ -863,7 +879,8 @@
             <div class="border-b border-slate-700 pb-4 flex justify-between items-end">
                 <div>
                     <h2 class="text-xl sm:text-2xl font-semibold text-white mb-1">System Requirements</h2>
-                    <p class="text-slate-400 text-sm">Net Application Area: <span class="text-emerald-400 font-bold text-lg">${fmt(data.netArea)} m²</span></p>
+                    <p class="text-slate-400 text-sm">Net Application Area: <span class="text-emerald-400 font-bold text-lg">${fmt(data.netArea)} m²</span> <span class="text-slate-500">· quantities include ${fmt(data.wastage)}% wastage</span></p>
+                    <p class="mt-3 text-sm text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">${alertIcon} <strong>Always test first.</strong> Paint a sample area on the actual wall to confirm coverage per m² and the colour before ordering. Absorbency, texture and the existing surface change how far the paint goes.</p>
                 </div>
             </div>
             
@@ -980,6 +997,7 @@
                         <span class="text-slate-200 font-semibold text-base sm:text-lg">Total KEIM Soldalit-Fixativ</span>
                         <div class="text-right">
                             <span class="text-white font-bold text-xl">${fmt(data.totalFixativL)} L</span>
+                            <span class="text-sm font-semibold text-emerald-300 block">${(() => { let l = data.totalFixativL, c20 = Math.floor(l / 20), r = l - c20 * 20, c5 = Math.ceil(r / 5 - 1e-9); if (c5 * 5 > 15) { c20 += 1; c5 = 0; } return [c20 ? c20 + ' × 20 L' : '', c5 ? c5 + ' × 5 L' : ''].filter(Boolean).join(' + ') || ''; })()}</span>
                             <span class="text-sm font-normal text-slate-400 block">${data.primerFixativ <= 0 ? 'for diluting the paint' : (data.totalFixativ > data.primerFixativ + 0.01 ? fmt(data.primerFixativL) + ' L primer coat + ' + fmt(data.totalFixativL - data.primerFixativL) + ' L for diluting' : 'for the primer coat')}</span>
                         </div>
                     </div>
@@ -1249,7 +1267,7 @@
 
             <div class="flex items-start space-x-3 text-xs sm:text-sm text-slate-500 bg-white p-5 rounded-xl border border-slate-200 mt-8 shadow-sm max-w-4xl mx-auto leading-relaxed">
                 <div class="text-emerald-500 shrink-0 mt-0.5">${infoIcon}</div>
-                <p>* KEIM Litre conversion is based on a specific density of 1.4 kg/L. Elastomeric comparison uses standard industry high-build spread rates (Primer @ 10m²/L, 2x Topcoats @ 4m²/L). Time estimation assumes a productivity rate of ${data.productivity}m² per day per coat, reflecting purely application time (excludes prep, dry times, and scaffold adjustments).</p>
+                <p>* KEIM quantities follow the Soldalit technical data sheet: approx. 0.2 kg/m² per coat on smooth surfaces (0.35&ndash;0.5 kg/m² for two coats), 25% more on textured surfaces; litres use a density of 1.6 kg/L; Soldalit-Fixativ primer approx. 0.15 L/m²; all quantities include the wastage allowance you set. Always test a sample area before ordering. Elastomeric comparison uses standard industry high-build spread rates (Primer @ 10m²/L, 2x Topcoats @ 4m²/L). Time estimation assumes a productivity rate of ${data.productivity}m² per day per coat, reflecting purely application time (excludes prep, dry times, and scaffold adjustments).</p>
             </div>
         `;
 
