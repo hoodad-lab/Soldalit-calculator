@@ -880,13 +880,12 @@
         if (data.primerFixativ > 0) {
             htmlSummary += `
                 <div class="space-y-2">
-                    <h3 class="text-emerald-400 font-medium text-sm uppercase tracking-wider">Step ${stepCounter++}: Surface Preparation</h3>
+                    <h3 class="text-emerald-400 font-medium text-sm uppercase tracking-wider">Step ${stepCounter++}: Primer Coat (Soldalit-Fixativ)</h3>
                     <div class="bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-700 shadow-sm">
                         <div class="flex justify-between items-center mb-1.5">
                             <span class="font-medium text-white text-base">KEIM Soldalit-Fixativ</span>
                             <span class="font-bold text-xl text-emerald-300">
-                                ${fmt(data.primerFixativ)} kg 
-                                <span class="text-sm font-normal text-slate-400 ml-1">(≈ ${fmt(data.primerFixativL)} L)</span>
+                                ${fmt(data.primerFixativL)} L
                             </span>
                         </div>
                         <p class="text-sm text-slate-400 leading-relaxed">${data.primerDescription}</p>
@@ -978,10 +977,10 @@
             htmlSummary += `
                 <div class="border-b border-emerald-800/50 pb-5">
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-200 font-semibold text-base sm:text-lg">Total KEIM Fixativ</span>
+                        <span class="text-slate-200 font-semibold text-base sm:text-lg">Total KEIM Soldalit-Fixativ</span>
                         <div class="text-right">
-                            <span class="text-white font-bold text-xl">${fmt(data.totalFixativ)} kg</span>
-                            <span class="text-sm font-normal text-slate-400 block sm:inline sm:ml-1">(${fmt(data.totalFixativL)} L)</span>
+                            <span class="text-white font-bold text-xl">${fmt(data.totalFixativL)} L</span>
+                            <span class="text-sm font-normal text-slate-400 block">${data.primerFixativ <= 0 ? 'for diluting the paint' : (data.totalFixativ > data.primerFixativ + 0.01 ? fmt(data.primerFixativL) + ' L primer coat + ' + fmt(data.totalFixativL - data.primerFixativL) + ' L for diluting' : 'for the primer coat')}</span>
                         </div>
                     </div>
                 </div>
@@ -1076,7 +1075,7 @@
                     <div class="flex flex-col relative z-10">
                         <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
                             <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Total Coats</span>
-                            <span class="text-sm lg:text-base font-bold text-white text-right">${data.primerFixativ > 0 ? '3 Coats' : '2 Coats'}</span>
+                            <div class="text-right"><span class="text-sm lg:text-base font-bold text-white block">${data.primerFixativ > 0 ? '3 Coats' : '2 Coats'}</span><span class="text-[10px] lg:text-[11px] text-emerald-500/70 block mt-0.5">${data.primerFixativ > 0 ? '(Fixativ primer + 2 Soldalit coats)' : '(Base coat + top coat)'}</span></div>
                         </div>
                         <div class="flex justify-between items-center h-[64px] border-b border-[#1b4332]/50">
                             <span class="text-[10px] lg:text-xs text-emerald-500/80 uppercase tracking-widest font-bold whitespace-nowrap pr-2">Total Volume</span>
