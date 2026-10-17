@@ -123,7 +123,7 @@
 
       <div class="bg-white border border-slate-200 rounded-2xl p-5 text-xs text-slate-600 space-y-1">
         <p class="font-semibold text-slate-700 text-sm">How this is worked out</p>
-        <p>Innostar approx. 125 mL/m² per coat. Innoprim approx. 150 mL/m² for one coat (KEIM Technical Data Sheets, smooth surfaces). Plus your wastage and texture allowance. Rounded up to whole 15 L containers.</p>
+        <p>Innostar approx. 125 mL/m² per coat. Innoprim approx. 150 mL/m² for one coat (KEIM Technical Data Sheets, smooth surfaces). Plus your wastage and texture allowance. Rounded up to tins: Innostar 12.5 L and 2.5 L, Innoprim 15 L.</p>
         <p>Questions? Call KEIM Australia on (02) 9748 7160.</p>
       </div>
     </div>
@@ -135,7 +135,20 @@ const PRICE = { // KEIM Australia retail price list, per litre, excl. GST
   innoprim: 20.04,
   white: 21.06, pg1: 30.59, pg2: 38.21, pg3: 68.80
 };
-const RATE_STAR = 0.125, RATE_PRIM = 0.15, PACK = 15;
+const RATE_STAR = 0.125, RATE_PRIM = 0.15;
+const PACKS_STAR = [12.5, 2.5];   // KEIM Innostar tins
+const PACKS_PRIM = [15];          // KEIM Innoprim tins
+// fewest litres over the need, then fewest tins: big tins first, top up with small ones
+function packUp(need, sizes){
+  if(need<=0) return {tins:[], litres:0};
+  const big=sizes[0], small=sizes[sizes.length-1];
+  let nb=Math.floor(need/big+1e-9), rest=need-nb*big, ns=sizes.length>1?Math.ceil(rest/small-1e-9):0;
+  if(sizes.length===1){ nb=Math.ceil(need/big-1e-9); ns=0; }
+  else if(ns*small>=big-1e-9){ nb+=1; ns=0; }
+  const tins=[]; if(nb) tins.push([nb,big]); if(ns) tins.push([ns,small]);
+  return {tins, litres:nb*big+ns*small};
+}
+const tinText=t=>t.tins.map(([n,sz])=>n+' × '+String(sz)+' L').join(' + ');
 let type = 'new', colour = 'white';
 
 const areasEl = document.getElementById('areas');
@@ -176,14 +189,14 @@ function calc(){
 
   const factor=(1+(parseFloat(document.getElementById('wastage').value)||0)/100)*parseFloat(document.getElementById('texture').value);
   const primL=area*RATE_PRIM*primCoats*factor, starL=area*RATE_STAR*starCoats*factor;
-  const primPacks=Math.ceil(primL/PACK-1e-9), starPacks=Math.ceil(starL/PACK-1e-9);
+  const primT=packUp(primL,PACKS_PRIM), starT=packUp(starL,PACKS_STAR);
 
   document.getElementById('row-prim').classList.toggle('hidden',primCoats===0);
   document.getElementById('prim-l').textContent=fmtL(primL);
-  document.getElementById('prim-detail').textContent=primCoats?`1 coat · ${primPacks} × 15 L container${primPacks===1?'':'s'}`:'';
+  document.getElementById('prim-detail').textContent=primCoats?`1 coat · buy ${tinText(primT)}`:'';
   document.getElementById('star-l').textContent=fmtL(starL);
-  document.getElementById('star-detail').textContent=`${starCoats} coat${starCoats>1?'s':''} · ${colour==='white'?'White':colour.toUpperCase().replace('PG','PG ')} · ${starPacks} × 15 L container${starPacks===1?'':'s'}`;
-  const cost=primPacks*PACK*PRICE.innoprim+starPacks*PACK*PRICE[colour];
+  document.getElementById('star-detail').textContent=`${starCoats} coat${starCoats>1?'s':''} · ${colour==='white'?'White':colour.toUpperCase().replace('PG','PG ')} · buy ${starT.litres?tinText(starT):'-'}`;
+  const cost=primT.litres*PRICE.innoprim+starT.litres*PRICE[colour];
   document.getElementById('cost').textContent=area>0?fmt$(cost):'$0';
   document.getElementById('summary').textContent=area>0?`${area.toLocaleString('en-AU')} m² · ${primCoats?'Innoprim + ':''}${starCoats} × Innostar`:'Enter an area to start.';
 }
