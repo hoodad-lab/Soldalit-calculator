@@ -123,7 +123,7 @@
 
       <div class="bg-white border border-slate-200 rounded-2xl p-5 text-xs text-slate-600 space-y-1">
         <p class="font-semibold text-slate-700 text-sm">How this is worked out</p>
-        <p>Innostar approx. 125 mL/m² per coat. Innoprim approx. 150 mL/m² for one coat (KEIM Technical Data Sheets, smooth surfaces). Plus your wastage and texture allowance. Rounded up to tins: Innostar White 15 L, Innostar colours 12.5 L and 2.5 L, Innoprim 15 L and 2.5 L.</p>
+        <p>Innostar approx. 125 mL/m² per coat. Innoprim approx. 150 mL/m² for one coat (KEIM Technical Data Sheets, smooth surfaces). Plus your wastage and texture allowance. Rounded up to the tins we sell: 15, 12.5, 5 and 2.5 L for Innostar White and Innoprim; 12.5, 5 and 2.5 L for Innostar colours (PG 1-3).</p>
         <p>Questions? Call KEIM Australia on (02) 9748 7160.</p>
       </div>
     </div>
@@ -136,18 +136,29 @@ const PRICE = { // KEIM Australia retail price list, per litre, excl. GST
   white: 21.06, pg1: 30.59, pg2: 38.21, pg3: 68.80
 };
 const RATE_STAR = 0.125, RATE_PRIM = 0.15;
-const PACKS_WHITE = [15];         // KEIM Innostar White: 15 L tins
-const PACKS_TINT = [12.5, 2.5];   // KEIM Innostar PG 1-3: 12.5 L and 2.5 L tins
-const PACKS_PRIM = [15, 2.5];     // KEIM Innoprim: 15 L and 2.5 L tins
-// fewest litres over the need, then fewest tins: big tins first, top up with small ones
+const PACKS_WHITE = [15, 12.5, 5, 2.5]; // KEIM Innostar White: 15, 12.5, 5 and 2.5 L tins (HubSpot catalogue)
+const PACKS_TINT = [12.5, 5, 2.5];      // KEIM Innostar PG 1-3: 12.5, 5 and 2.5 L tins
+const PACKS_PRIM = [15, 12.5, 5, 2.5];  // KEIM Innoprim: 15, 12.5, 5 and 2.5 L tins
+// fewest litres over the need, then fewest tins: fill with the biggest tin, then search the best mix for the remainder
 function packUp(need, sizes){
   if(need<=0) return {tins:[], litres:0};
-  const big=sizes[0], small=sizes[sizes.length-1];
-  let nb=Math.floor(need/big+1e-9), rest=need-nb*big, ns=sizes.length>1?Math.ceil(rest/small-1e-9):0;
-  if(sizes.length===1){ nb=Math.ceil(need/big-1e-9); ns=0; }
-  else if(ns*small>=big-1e-9){ nb+=1; ns=0; }
-  const tins=[]; if(nb) tins.push([nb,big]); if(ns) tins.push([ns,small]);
-  return {tins, litres:nb*big+ns*small};
+  const big=sizes[0], rest=sizes.slice(1);
+  let best=null;
+  for(let nb=Math.max(0,Math.floor(need/big+1e-9)-1); nb<=Math.floor(need/big+1e-9)+1; nb++){
+    const r=need-nb*big;
+    const search=(i,left,cnt)=>{
+      if(left<=1e-9){ const tot=nb*big+cnt.reduce((a,n,k)=>a+n*rest[k],0), nt=nb+cnt.reduce((a,n)=>a+n,0);
+        if(!best||tot<best.tot-1e-9||(Math.abs(tot-best.tot)<1e-9&&nt<best.nt)) best={tot,nt,nb,cnt:cnt.slice()}; return; }
+      if(i>=rest.length) return;
+      const max=Math.ceil(left/rest[i]-1e-9);
+      for(let n=0;n<=max;n++){ cnt[i]=n; search(i+1,left-n*rest[i],cnt); }
+      cnt[i]=0;
+    };
+    search(0,r,rest.map(()=>0));
+  }
+  const tins=[]; if(best.nb) tins.push([best.nb,big]);
+  best.cnt.forEach((n,k)=>{ if(n) tins.push([n,rest[k]]); });
+  return {tins, litres:best.tot};
 }
 const tinText=t=>t.tins.map(([n,sz])=>n+' × '+String(sz)+' L').join(' + ');
 let type = 'new', colour = 'white';
