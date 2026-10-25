@@ -770,7 +770,7 @@
 
         // KEIM TDS (Soldalit): approx. 0.35-0.5 kg/m2 for two coats on smooth surfaces -> 0.2 kg/m2 per coat
         const coverages = {
-            'soldalit': 5,
+            'soldalit': 1 / 0.22, // first coat approx. 0.22 kg/m2 (conservative, same as KEIM Project Studio)
             'grob': 4,   // KEIM TDS Soldalit-Grob: approx. 0.25 kg/m2 for one coat
             'contact-plus': 2.5,
             'contact-plus-grob': 2.0
@@ -1269,7 +1269,7 @@
 
             <div class="flex items-start space-x-3 text-xs sm:text-sm text-slate-500 bg-white p-5 rounded-xl border border-slate-200 mt-8 shadow-sm max-w-4xl mx-auto leading-relaxed">
                 <div class="text-emerald-500 shrink-0 mt-0.5">${infoIcon}</div>
-                <p>* KEIM quantities follow the Soldalit technical data sheet: approx. 0.2 kg/m² per coat on smooth surfaces (0.35&ndash;0.5 kg/m² for two coats), 25% more on textured surfaces; litres use a density of 1.6 kg/L; Soldalit-Fixativ primer approx. 0.15 L/m²; all quantities include the wastage allowance you set. Always test a sample area before ordering. Elastomeric comparison uses standard industry high-build spread rates (Primer @ 10m²/L, 2x Topcoats @ 4m²/L). Time estimation assumes a productivity rate of ${data.productivity}m² per day per coat, reflecting purely application time (excludes prep, dry times, and scaffold adjustments).</p>
+                <p>* KEIM quantities follow the Soldalit technical data sheet: approx. 0.22 kg/m² for the first coat and 0.2 kg/m² for the second on smooth surfaces (0.35&ndash;0.5 kg/m² for two coats), 25% more on textured surfaces; litres use a density of 1.6 kg/L; Soldalit-Fixativ primer approx. 0.15 L/m²; all quantities include the wastage allowance you set. Always test a sample area before ordering. Elastomeric comparison uses standard industry high-build spread rates (Primer @ 10m²/L, 2x Topcoats @ 4m²/L). Time estimation assumes a productivity rate of ${data.productivity}m² per day per coat, reflecting purely application time (excludes prep, dry times, and scaffold adjustments).</p>
             </div>
         `;
 
