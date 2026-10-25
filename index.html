@@ -132,18 +132,19 @@
                         <span class="text-xs opacity-80 mt-1 block">KEIM Soldalit</span>
                     </button>
                     <button type="button" class="btn-option w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="baseCoat" data-value="grob">
-                        <span class="font-semibold block text-base">Hairline Cracks (up to 0.5mm)</span>
+                        <span class="font-semibold block text-base">Hairline Cracks (up to 0.3 mm)</span>
                         <span class="text-xs opacity-80 mt-1 block">KEIM Soldalit-Grob (Slight texture)</span>
                     </button>
                     <button type="button" class="btn-option w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="baseCoat" data-value="contact-plus">
-                        <span class="font-semibold block text-base">Static Cracks (0.5mm - 1mm)</span>
+                        <span class="font-semibold block text-base">Shrinkage &amp; Hairline Cracks (up to 0.5 mm)</span>
                         <span class="text-xs opacity-80 mt-1 block">KEIM Contact-Plus (Heavy texture)</span>
                     </button>
                     <button type="button" class="btn-option w-full text-left px-5 py-4 rounded-lg border text-sm bg-white border-slate-200 text-slate-600 hover:border-slate-300" data-group="baseCoat" data-value="contact-plus-grob">
-                        <span class="font-semibold block text-base">Severe Cracks / Maximum Texture</span>
+                        <span class="font-semibold block text-base">Fine Cracks (up to 1.0 mm) / Maximum Texture</span>
                         <span class="text-xs opacity-80 mt-1 block">KEIM Contact-Plus-Grob</span>
                     </button>
                 </div>
+                <p class="text-xs text-slate-500 mt-2">Crack widths from the KEIM technical data sheets. Wider or moving cracks must be repaired first: talk to our technical team on (02) 9748 7160.</p>
             </div>
 
             <!-- Labour Assumptions -->
@@ -600,11 +601,11 @@
         if (baseCoat === 'soldalit') return '';
         const c = '#22c55e'; // Green KEIM fill
         let paths = '';
-        if (baseCoat === 'grob') { // Hairline
+        if (baseCoat === 'grob') { // Hairline cracks up to 0.3 mm (Soldalit-Grob TDS)
             paths = '<path d="M 15,0 Q 20,20 18,50 T 20,100" stroke="' + c + '" stroke-width="1.5" fill="none" opacity="0.9"/><path d="M 50,0 Q 45,30 52,60 T 50,100" stroke="' + c + '" stroke-width="1" fill="none" opacity="0.9"/><path d="M 85,0 Q 88,40 82,70 T 85,100" stroke="' + c + '" stroke-width="2" fill="none" opacity="0.9"/><path d="M 120,0 Q 115,25 122,55 T 120,100" stroke="' + c + '" stroke-width="1.5" fill="none" opacity="0.9"/><path d="M 160,0 Q 165,35 158,65 T 160,100" stroke="' + c + '" stroke-width="1" fill="none" opacity="0.9"/><path d="M 190,0 Q 185,20 192,50 T 190,100" stroke="' + c + '" stroke-width="2" fill="none" opacity="0.9"/>';
-        } else if (baseCoat === 'contact-plus') { // Static Cracks
+        } else if (baseCoat === 'contact-plus') { // Shrinkage/hairline cracks up to 0.5 mm (Contact-Plus TDS)
             paths = '<path d="M 25,0 L 30,20 L 25,50 L 32,80 L 28,100" stroke="' + c + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 75,0 L 70,30 L 78,60 L 72,100" stroke="' + c + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 140,0 L 148,25 L 138,55 L 145,100" stroke="' + c + '" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 185,0 L 180,40 L 188,70 L 182,100" stroke="' + c + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>';
-        } else if (baseCoat === 'contact-plus-grob') { // Severe
+        } else if (baseCoat === 'contact-plus-grob') { // Fine cracks up to 1.0 mm (Contact-Plus-Grob TDS)
             paths = '<path d="M 35,0 L 42,30 L 36,60 L 45,100" stroke="' + c + '" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 100,0 L 90,40 L 105,70 L 95,100" stroke="' + c + '" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/><path d="M 165,0 L 175,25 L 160,65 L 170,100" stroke="' + c + '" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>';
         }
         return '<svg class="absolute top-0 left-0 w-full h-full z-0 pointer-events-none drop-shadow-sm" viewBox="0 0 200 100" preserveAspectRatio="none">' + paths + '</svg>';
